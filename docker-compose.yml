@@ -1,0 +1,13 @@
+version: '2'
+services:
+  app:
+    build: .
+    command: make --no-print-directory run
+    volumes:
+      - ./src/vaahan:/workspace/src/vaahan
+    environment:
+      CODE_ENV: dev
+    ports:
+      - "18770:18770"
+    logging:
+      driver: 'json-file'
