@@ -7,6 +7,7 @@ import (
 
 func main() {
 	staticFs := http.FileServer(http.Dir("/workspace/src/vaahan/static"))
-	http.Handle("/static/", http.StripPrefix("/static/", staticFs))
+	http.Handle("/", http.StripPrefix("/", staticFs))
+
 	log.Fatal(http.ListenAndServe(":18770", nil))
 }
