@@ -3,7 +3,7 @@
 (function() {
   document.addEventListener('DOMContentLoaded', function(){
     var myHeaders = new Headers();
-    var myRequest = new Request(window.location.origin + '/api/get_map', {
+    var myRequest = new Request(window.location.origin + '/api/get_track', {
       method: 'GET',
       headers: myHeaders,
       mode: 'cors',
@@ -19,23 +19,23 @@
         throw Error(response.statusText);
       }
     })
-    .then(function(map) {
-      drawMap(map);
+    .then(function(track) {
+      drawTrack(track);
     })
     .catch(function(err) {
       console.error(err);
     });
   });
 
-  function drawMap(mapData) {
-    console.log("inside drawMap()");
-    console.log(mapData);
-    let mapCanvas = document.getElementById('map');
-    mapCanvas.height = mapData.height;
-    mapCanvas.width = mapData.width;
-    var ctx = mapCanvas.getContext("2d");
-    drawRoad(ctx, mapData.road);
-    drawStartFinishLine(ctx, mapData.startingLine, mapData.finishingLine);
+  function drawTrack(trackData) {
+    console.log("inside drawTrack()");
+    console.log(trackData);
+    let trackCanvas = document.getElementById('track');
+    trackCanvas.height = trackData.height;
+    trackCanvas.width = trackData.width;
+    var ctx = trackCanvas.getContext("2d");
+    drawRoad(ctx, trackData.road);
+    drawStartFinishLine(ctx, trackData.startingLine, trackData.finishingLine);
   }
 
   function drawRoad(ctx, roadData) {

@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"vaahan/mapper"
+	"vaahan/track"
 
 	glog "github.com/golang/glog"
 )
@@ -19,15 +19,15 @@ func main() {
 	// Calling flag.Parse() so that all flag changes are picked.
 	flag.Parse()
 
-	http.HandleFunc("/api/get_map", func(w http.ResponseWriter, r *http.Request) {
-		mapData, err := mapper.GetMap()
+	http.HandleFunc("/api/get_track", func(w http.ResponseWriter, r *http.Request) {
+		trackData, err := track.GetTrack()
 		if err != nil {
 			glog.Error(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		response, err := json.Marshal(mapData)
+		response, err := json.Marshal(trackData)
 		if err != nil {
 			log.Print(err)
 			return

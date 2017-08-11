@@ -1,6 +1,6 @@
-package mapper
+package track
 
-type Map struct {
+type Track struct {
 	ID            string `json:"id"`
 	Height        int    `json:"height"`
 	Width         int    `json:"width"`
@@ -17,7 +17,7 @@ type Line struct {
 }
 
 var (
-	map1 = Map{
+	track1 = Track{
 		ID:            "1",
 		Height:        500,
 		Width:         1500,
@@ -32,6 +32,6 @@ var (
 	}
 )
 
-func GetMap() (Map, error) {
-	return map1, nil
+func GetTrack() (Track, error) {
+	return track1, nil
 }
