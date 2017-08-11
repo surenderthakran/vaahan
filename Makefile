@@ -1,36 +1,30 @@
 GO_PROJECT_NAME := vaahan
 
-define info_echo
-  @tput setaf 4
-  @echo $(1)
-  @tput sgr0
-endef
-
 # Go rules
 go_format:
-	$(call info_echo,"\n....Formatting $(GO_PROJECT_NAME)'s go files....")
+	@echo "\n\n.......Formatting $(GO_PROJECT_NAME)'s go files......."
 	gofmt -w $(GOPATH)/src/$(GO_PROJECT_NAME)
 
 go_prep_install:
-	$(call info_echo,"\n....Preparing installation environment for $(GO_PROJECT_NAME)....")
+	@echo "\n\n.......Preparing installation environment for $(GO_PROJECT_NAME)......."
 	mkdir -p $(GOPATH)/bin $(GOPATH)/pkg
 	go get github.com/cespare/reflex
 
 go_dep_install:
-  $(call info_echo,"\n....Installing dependencies for $(GO_PROJECT_NAME)....")
-  go get ./...
+	@echo "\n\n.......Installing dependencies for $(GO_PROJECT_NAME)......."
+	go get ./...
 
 go_install:
-  $(call info_echo,"\n....Compiling $(GO_PROJECT_NAME)....")
-  go install $(GO_PROJECT_NAME)
+	@echo "\n\n.......Compiling $(GO_PROJECT_NAME)......."
+	go install $(GO_PROJECT_NAME)
 
 go_test:
-  $(call info_echo,"\n....Running tests for $(GO_PROJECT_NAME)....")
-  go test ./src/$(GO_PROJECT_NAME)/...
+	@echo "\n\n.......Running tests for $(GO_PROJECT_NAME)......."
+	go test ./src/$(GO_PROJECT_NAME)/...
 
 go_run:
-  $(call info_echo,"\n....Running $(GO_PROJECT_NAME)....")
-  $(GOPATH)/bin/$(GO_PROJECT_NAME)
+	@echo "\n\n.......Running $(GO_PROJECT_NAME)......."
+	$(GOPATH)/bin/$(GO_PROJECT_NAME)
 
 
 # Project rules

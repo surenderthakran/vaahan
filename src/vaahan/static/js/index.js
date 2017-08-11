@@ -2,9 +2,6 @@
 
 (function() {
   document.addEventListener('DOMContentLoaded', function(){
-    console.log("loaded");
-    console.log(window.location.origin);
-
     var myHeaders = new Headers();
     var myRequest = new Request(window.location.origin + '/api/get_map', {
       method: 'GET',
@@ -37,12 +34,36 @@
     mapCanvas.height = mapData.height;
     mapCanvas.width = mapData.width;
     var ctx = mapCanvas.getContext("2d");
-    for (let i = 0, len = mapData.road.length; i < len; i++) {
-      console.log(mapData.road[i]);
-      let line = mapData.road[i]
-      ctx.moveTo(line.startX, line.startY);
+    drawRoad(ctx, mapData.road);
+    drawStartFinishLine(ctx, mapData.startingLine, mapData.finishingLine);
+  }
+
+  function drawRoad(ctx, roadData) {
+    ctx.beginPath();
+    for (let i = 0, len = roadData.length; i < len; i++) {
+      let line = roadData[i];
+      if (i === 0) {
+        ctx.moveTo(line.startX, line.startY);
+      } else {
+        ctx.lineTo(line.startX, line.startY);
+      }
       ctx.lineTo(line.endX, line.endY);
-      ctx.stroke();
     }
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fillStyle = "#777777";
+    ctx.fill();
+  }
+
+  function drawStartFinishLine(ctx, startingLine, finishingLine) {
+    ctx.beginPath();
+    ctx.moveTo(startingLine.startX, startingLine.startY);
+    ctx.lineTo(startingLine.endX, startingLine.endY);
+    ctx.moveTo(finishingLine.startX, finishingLine.startY);
+    ctx.lineTo(finishingLine.endX, finishingLine.endY);
+    ctx.closePath();
+    ctx.strokeStyle="#ffffff";
+    ctx.LineWidth = 150;
+    ctx.stroke();
   }
 })();
