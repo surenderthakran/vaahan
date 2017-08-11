@@ -2,7 +2,5 @@
 
 ```
 docker build -t vaahan .
-```
-```
-docker run -it -d --name vaahan_1 -p 18770:18770 vaahan
+docker run --rm -it -v $(pwd)/src/vaahan:/workspace/src/vaahan -p 18770:18770 --name=vaahan_1 vaahan bash
 ```
