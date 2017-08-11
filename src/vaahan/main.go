@@ -6,10 +6,12 @@ import (
 	"log"
 	"net/http"
 
-	"vaahan/track"
+	"vaahan/mapper"
 
 	glog "github.com/golang/glog"
 )
+
+var staticFs = http.FileServer(http.Dir("/workspace/src/vaahan/static"))
 
 func main() {
 	// Overriding glog's logtostderr flag's value to print logs to stderr.
@@ -17,17 +19,15 @@ func main() {
 	// Calling flag.Parse() so that all flag changes are picked.
 	flag.Parse()
 
-	staticFs := http.FileServer(http.Dir("/workspace/src/vaahan/static"))
-
-	http.HandleFunc("/api/get_track", func(w http.ResponseWriter, r *http.Request) {
-		track, err := track.GetTrack()
+	http.HandleFunc("/api/get_map", func(w http.ResponseWriter, r *http.Request) {
+		mapData, err := mapper.GetMap()
 		if err != nil {
 			glog.Error(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		response, err := json.Marshal(track)
+		response, err := json.Marshal(mapData)
 		if err != nil {
 			log.Print(err)
 			return

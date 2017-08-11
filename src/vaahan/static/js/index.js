@@ -6,7 +6,7 @@
     console.log(window.location.origin);
 
     var myHeaders = new Headers();
-    var myRequest = new Request(window.location.origin + '/api/get_track', {
+    var myRequest = new Request(window.location.origin + '/api/get_map', {
       method: 'GET',
       headers: myHeaders,
       mode: 'cors',
@@ -22,11 +22,19 @@
         throw Error(response.statusText);
       }
     })
-    .then(function(track) {
-      console.log(track);
+    .then(function(map) {
+      drawMap(map);
     })
     .catch(function(err) {
       console.error(err);
     });
   });
+
+  function drawMap(mapData) {
+    console.log("inside drawMap()");
+    console.log(mapData);
+    let mapCanvas = document.getElementById('map');
+    mapCanvas.height = mapData.height;
+    mapCanvas.width = mapData.width;
+  }
 })();
