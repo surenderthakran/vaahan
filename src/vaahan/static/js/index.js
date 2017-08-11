@@ -36,5 +36,13 @@
     let mapCanvas = document.getElementById('map');
     mapCanvas.height = mapData.height;
     mapCanvas.width = mapData.width;
+    var ctx = mapCanvas.getContext("2d");
+    for (let i = 0, len = mapData.road.length; i < len; i++) {
+      console.log(mapData.road[i]);
+      let line = mapData.road[i]
+      ctx.moveTo(line.startX, line.startY);
+      ctx.lineTo(line.endX, line.endY);
+      ctx.stroke();
+    }
   }
 })();
