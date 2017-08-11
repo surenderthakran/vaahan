@@ -11,4 +11,4 @@ WORKDIR $GOPATH
 
 RUN make install
 
-CMD make run
+CMD make --no-print-directory run
