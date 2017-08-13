@@ -3,12 +3,18 @@
   <head>
     <title>Vaahan</title>
     <script src="/js/index.js"></script>
+    <script src="/js/utils.js"></script>
     <link rel="stylesheet" href="/css/main.css">
   </head>
   <body>
     <p>Vaahan</p>
+    <select id="track">
+      <option disabled selected value> -- select a track -- </option>
+      <option value="1">Track 1</option>
+    </select>
     <div id="main">
-      <canvas id="track"></canvas>
+      <canvas id="map"></canvas>
+      <canvas id="car"></canvas>
     </div>
   </body>
 </html>

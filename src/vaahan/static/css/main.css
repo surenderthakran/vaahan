@@ -1,4 +1,17 @@
-#track {
-  background-color: #9ee89e;
-  border: solid black 1px;
+#main {
+  position: relative;;
+}
+
+#map {
+  position: absolute;;
+  left: 0;
+  top: 0;
+  z-index: 0;
+}
+
+#car {
+  position: absolute;;
+  left: 0;
+  top: 0;
+  z-index: 1;
 }
