@@ -115,5 +115,50 @@
 
   function drawCar() {
     console.log("inside drawCar()");
+    _contextCar.clearRect(0, 0, _canvasCar.width, _canvasCar.height)
+
+    _contextCar.beginPath();
+    _contextCar.moveTo(getX(_carData.left_headlight), getY(_carData.left_headlight));
+    _contextCar.lineTo(getX(_carData.right_headlight), getY(_carData.right_headlight));
+    _contextCar.lineTo(getX(_carData.right_taillight), getY(_carData.right_taillight));
+    _contextCar.lineTo(getX(_carData.left_taillight), getY(_carData.left_taillight));
+    _contextCar.lineTo(getX(_carData.left_headlight), getY(_carData.left_headlight));
+    _contextCar.closePath();
+    _contextCar.stroke();
+    _contextCar.fillStyle = "yellow";
+    _contextCar.fill();
+
+    setTimeout(updateCar, 1000);
+  }
+
+  function updateCar() {
+    var myHeaders = new Headers();
+    var myRequest = new Request(
+      window.location.origin + '/api/get_car',
+      {
+        method: 'GET',
+        headers: myHeaders,
+        mode: 'cors',
+        cache: 'default',
+      }
+    );
+
+    fetch(myRequest)
+    .then(function(response) {
+      console.log(response);
+      if(response.ok) {
+        return response.json();
+      } else {
+        throw Error(response.statusText);
+      }
+    })
+    .then(function(car) {
+      _carData = car;
+      console.log(_carData);
+      drawCar();
+    })
+    .catch(function(err) {
+      console.error(err);
+    });
   }
 })();
