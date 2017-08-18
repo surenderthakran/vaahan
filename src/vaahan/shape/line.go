@@ -6,12 +6,16 @@ type Line struct {
 	yIntercept float64
 }
 
+func (line Line) GetStartPoint() *Point {
+	return line.start
+}
+
 func (line Line) GetSlope() float64 {
 	return line.slope
 }
 
-func (line Line) GetStartPoint() *Point {
-	return line.start
+func (line Line) GetYIntercept() float64 {
+	return line.yIntercept
 }
 
 func GetSlopeAndYInterceptByPoints(start, end *Point) (float64, float64) {

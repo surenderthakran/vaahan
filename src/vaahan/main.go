@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"vaahan/car"
-	"vaahan/driver"
 	"vaahan/track"
 
 	glog "github.com/golang/glog"
@@ -22,6 +21,7 @@ func main() {
 	flag.Parse()
 
 	http.HandleFunc("/api/get_track", func(w http.ResponseWriter, r *http.Request) {
+		glog.Info("Request: /api/get_track")
 		trackID := r.URL.Query()["id"][0]
 		track, err := track.GetTrack(trackID)
 		if err != nil {
@@ -42,6 +42,7 @@ func main() {
 	})
 
 	http.HandleFunc("/api/init_car", func(w http.ResponseWriter, r *http.Request) {
+		glog.Info("Request: /api/init_car")
 		trackID := r.URL.Query()["id"][0]
 		track, err := track.GetTrack(trackID)
 		if err != nil {
@@ -50,7 +51,7 @@ func main() {
 			return
 		}
 
-		car := car.New(track.StartVector)
+		car := car.New(track)
 
 		response, err := json.Marshal(car)
 		if err != nil {
@@ -63,15 +64,8 @@ func main() {
 		w.Write(response)
 	})
 
-	http.HandleFunc("/api/start_drive", func(w http.ResponseWriter, r *http.Request) {
-		trackID := r.URL.Query()["id"][0]
-		track, err := track.GetTrack(trackID)
-		if err != nil {
-			glog.Error(err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
+	http.HandleFunc("/api/drive_car", func(w http.ResponseWriter, r *http.Request) {
+		glog.Info("Request: /api/drive_car")
 		car, err := car.GetCar()
 		if err != nil {
 			glog.Error(err)
@@ -79,8 +73,9 @@ func main() {
 			return
 		}
 
-		driver := driver.New(car, track)
-		driver.Drive()
+		glog.Info(car)
+		car.Drive()
+		glog.Info(car)
 
 		response, err := json.Marshal(car)
 		if err != nil {
@@ -94,6 +89,7 @@ func main() {
 	})
 
 	http.HandleFunc("/api/get_car", func(w http.ResponseWriter, r *http.Request) {
+		glog.Info("Request: /api/get_car")
 		car, err := car.GetCar()
 		if err != nil {
 			glog.Error(err)
