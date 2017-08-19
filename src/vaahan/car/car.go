@@ -5,18 +5,18 @@ import (
 	"math"
 	"time"
 
-	"vaahan/shape"
+	geo "vaahan/gogeo/2d"
 	"vaahan/track"
 
 	glog "github.com/golang/glog"
 )
 
 type Car struct {
-	LeftHeadlight  *shape.Point `json:"left_headlight"`
-	RightHeadlight *shape.Point `json:"right_headlight"`
-	LeftTaillight  *shape.Point `json:"left_taillight"`
-	RightTaillight *shape.Point `json:"right_taillight"`
-	Status         string       `json:"status"`
+	LeftHeadlight  *geo.Point `json:"left_headlight"`
+	RightHeadlight *geo.Point `json:"right_headlight"`
+	LeftTaillight  *geo.Point `json:"left_taillight"`
+	RightTaillight *geo.Point `json:"right_taillight"`
+	Status         string     `json:"status"`
 }
 
 var (
@@ -95,14 +95,14 @@ func New(track *track.Track) *Car {
 
 	tailSlope := -(1 / startVector.GetSlope())
 	glog.Infof("tailSlope: %v", tailSlope)
-	tailYIntercept := shape.GetYInterceptByPointAndSlope(startVector.GetStartPoint(), tailSlope)
+	tailYIntercept := geo.GetYInterceptByPointAndSlope(startVector.GetStartPoint(), tailSlope)
 	glog.Infof("tailYIntercept: %v", tailYIntercept)
 
 	car = &Car{
-		LeftHeadlight:  shape.NewPoint(50, 265),
-		RightHeadlight: shape.NewPoint(50, 235),
-		LeftTaillight:  shape.NewPoint(0, 265),
-		RightTaillight: shape.NewPoint(0, 235),
+		LeftHeadlight:  geo.NewPoint(50, 265),
+		RightHeadlight: geo.NewPoint(50, 235),
+		LeftTaillight:  geo.NewPoint(0, 265),
+		RightTaillight: geo.NewPoint(0, 235),
 		Status:         "stopped",
 	}
 	// go car.driver()

@@ -1,4 +1,4 @@
-package shape
+package gogeo
 
 type Line struct {
 	start, end *Point

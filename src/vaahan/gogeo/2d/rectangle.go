@@ -1,4 +1,4 @@
-package shape
+package gogeo
 
 type Rectangle struct {
 	Height  float64 `json:"height"`
