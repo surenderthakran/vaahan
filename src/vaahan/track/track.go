@@ -11,7 +11,7 @@ type Track struct {
 	Height      int            `json:"height"`
 	Width       int            `json:"width"`
 	Boundary    *geo.Rectangle `json:"boundary"`
-	StartVector *geo.Line      `json:"start_vector"`
+	StartVector *geo.Ray       `json:"start_vector"`
 }
 
 var (

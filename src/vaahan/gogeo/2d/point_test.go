@@ -15,11 +15,11 @@ func TestDistanceFrom(t *testing.T) {
 			end:   NewPoint(0, 5),
 			want:  float64(5),
 		},
-		// {
-		// 	start: NewPoint(1, 3),
-		// 	end:   NewPoint(5, 10),
-		// 	want:  float64(5),
-		// },
+		{
+			start: NewPoint(1, 3),
+			end:   NewPoint(5, 10),
+			want:  float64(8.06),
+		},
 	}
 
 	for _, test := range testCases {

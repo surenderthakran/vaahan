@@ -4,7 +4,7 @@ type Rectangle struct {
 	Height  float64 `json:"height"`
 	Width   float64 `json:"width"`
 	TopLeft *Point  `json:"top_left"`
-	sides   []*Line
+	sides   []*LineSegment
 }
 
 func NewRectangleByCorners(sw, ne *Point) *Rectangle {
@@ -14,7 +14,7 @@ func NewRectangleByCorners(sw, ne *Point) *Rectangle {
 		Height:  nw.DistanceFrom(sw),
 		Width:   nw.DistanceFrom(ne),
 		TopLeft: nw,
-		sides: []*Line{
+		sides: []*LineSegment{
 			NewLineSegmentByPoints(sw, nw),
 			NewLineSegmentByPoints(nw, ne),
 			NewLineSegmentByPoints(ne, se),
