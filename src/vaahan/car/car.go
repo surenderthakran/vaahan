@@ -12,6 +12,10 @@ import (
 )
 
 type Car struct {
+	Length         float64
+	Width          float64
+	frontCenter    *geo.Point
+	backCenter     *geo.Point
 	LeftHeadlight  *geo.Point `json:"left_headlight"`
 	RightHeadlight *geo.Point `json:"right_headlight"`
 	LeftTaillight  *geo.Point `json:"left_taillight"`
@@ -69,42 +73,38 @@ func GetCar() (*Car, error) {
 	return car, nil
 }
 
+func (car *Car) SetRightHeadlight(startVector *geo.Ray) {
+	tan := car.Width / (2 * car.Length)
+	alpha := math.Tanh(tan)
+	distanceOfHeadlightFromStart := car.Length / math.Cos(alpha)
+	theta := startVector.GetAngle().Radians() - alpha
+
+	x := math.Cos(theta) * distanceOfHeadlightFromStart
+	y := math.Sin(theta) * distanceOfHeadlightFromStart
+
+	rightHeadlight := geo.NewPoint(geo.RoundTo(startVector.GetStartPoint().X+x, 2), geo.RoundTo(startVector.GetStartPoint().Y+y, 2))
+
+	car.RightHeadlight = rightHeadlight
+}
+
 func New(track *track.Track) *Car {
 	startVector := track.StartVector
-	glog.Infof("startVector: %v", startVector)
-	glog.Infof("slope: %v", startVector.GetSlope())
-	glog.Infof("yIntercept: %v", startVector.GetYIntercept())
-	glog.Info("tailCentre: %v", startVector.GetStartPoint())
 
 	length := float64(50)
-	interim := math.Sqrt(math.Pow(length, 2) / (1 + math.Pow(startVector.GetSlope(), 2)))
-
-	x1 := startVector.GetStartPoint().X + interim
-	y1 := (startVector.GetSlope() * x1) + startVector.GetYIntercept()
-	glog.Infof("%v, %v", x1, y1)
-
-	x2 := startVector.GetStartPoint().X - interim
-	y2 := (startVector.GetSlope() * x2) + startVector.GetYIntercept()
-	glog.Infof("%v, %v", x2, y2)
-
-	dot1 := (startVector.GetStartPoint().X * x1) + (startVector.GetStartPoint().Y * y1)
-	glog.Infof("dot1: %v", dot1)
-
-	dot2 := (startVector.GetStartPoint().X * x2) + (startVector.GetStartPoint().Y * y2)
-	glog.Infof("dot2: %v", dot2)
-
-	tailSlope := -(1 / startVector.GetSlope())
-	glog.Infof("tailSlope: %v", tailSlope)
-	tailYIntercept := geo.GetYInterceptByPointAndSlope(startVector.GetStartPoint(), tailSlope)
-	glog.Infof("tailYIntercept: %v", tailYIntercept)
-
+	width := float64(30)
 	car = &Car{
+		Length:         length,
+		Width:          width,
+		frontCenter:    startVector.FindPointAtDistance(length),
+		backCenter:     startVector.GetStartPoint(),
 		LeftHeadlight:  geo.NewPoint(50, 265),
-		RightHeadlight: geo.NewPoint(50, 235),
 		LeftTaillight:  geo.NewPoint(0, 265),
 		RightTaillight: geo.NewPoint(0, 235),
 		Status:         "stopped",
 	}
-	// go car.driver()
+
+	car.SetRightHeadlight(startVector)
+
+	go car.driver()
 	return car
 }

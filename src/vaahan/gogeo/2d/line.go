@@ -1,42 +1,46 @@
 package gogeo
 
+import (
+	"math"
+)
+
 type Line struct {
 	slope      float64
 	yIntercept float64
 }
 
-func (line Line) GetSlope() float64 {
+func (line *Line) GetSlope() float64 {
 	return line.slope
 }
 
-func (line Line) GetYIntercept() float64 {
+func (line *Line) GetYIntercept() float64 {
 	return line.yIntercept
 }
 
 type Ray struct {
-	start      *Point
-	slope      float64
-	yIntercept float64
+	start *Point
+	angle Angle
 }
 
-func NewRayByPointAndEquation(start *Point, slope, yIntercept float64) *Ray {
+func NewRayByPointAndDirection(start *Point, angle Angle) *Ray {
 	return &Ray{
-		start:      start,
-		slope:      slope,
-		yIntercept: yIntercept,
+		start: start,
+		angle: angle,
 	}
 }
 
-func (ray Ray) GetStartPoint() *Point {
+func (ray *Ray) GetStartPoint() *Point {
 	return ray.start
 }
 
-func (ray Ray) GetSlope() float64 {
-	return ray.slope
+func (ray *Ray) GetAngle() Angle {
+	return ray.angle
 }
 
-func (ray Ray) GetYIntercept() float64 {
-	return ray.yIntercept
+func (ray *Ray) FindPointAtDistance(distance float64) *Point {
+	x := math.Sin(ray.angle.Radians()) * distance
+	y := math.Cos(ray.angle.Radians()) * distance
+	return NewPoint(ray.start.X+x, ray.start.Y+y)
 }
 
 type LineSegment struct {
@@ -45,15 +49,15 @@ type LineSegment struct {
 	yIntercept float64
 }
 
-func (segment LineSegment) GetStartPoint() *Point {
+func (segment *LineSegment) GetStartPoint() *Point {
 	return segment.start
 }
 
-func (segment LineSegment) GetSlope() float64 {
+func (segment *LineSegment) GetSlope() float64 {
 	return segment.slope
 }
 
-func (segment LineSegment) GetYIntercept() float64 {
+func (segment *LineSegment) GetYIntercept() float64 {
 	return segment.yIntercept
 }
 

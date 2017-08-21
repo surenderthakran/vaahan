@@ -27,7 +27,7 @@ func GetTrack(trackID string) (*Track, error) {
 		Height:      500,
 		Width:       1000,
 		Boundary:    boundary,
-		StartVector: geo.NewRayByPointAndEquation(&geo.Point{0, 250}, 0, 250),
+		StartVector: geo.NewRayByPointAndDirection(&geo.Point{0, 250}, geo.Angle(0)),
 	}
 	return track, nil
 }
