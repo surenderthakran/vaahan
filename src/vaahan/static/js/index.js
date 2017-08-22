@@ -148,13 +148,32 @@
     _car.context.beginPath();
     _car.context.moveTo(getX(_car.data.left_headlight), getY(_car.data.left_headlight));
     _car.context.lineTo(getX(_car.data.right_headlight), getY(_car.data.right_headlight));
+    _car.context.lineWidth = 3;
+    _car.context.stroke();
     _car.context.lineTo(getX(_car.data.right_taillight), getY(_car.data.right_taillight));
+    _car.context.lineWidth = 0.5;
     _car.context.lineTo(getX(_car.data.left_taillight), getY(_car.data.left_taillight));
     _car.context.lineTo(getX(_car.data.left_headlight), getY(_car.data.left_headlight));
     _car.context.closePath();
     _car.context.stroke();
     _car.context.fillStyle = "yellow";
     _car.context.fill();
+
+    _car.context.moveTo(getX(_car.data.back_center), getY(_car.data.back_center));
+    _car.context.lineTo(getX(_car.data.front_center), getY(_car.data.front_center));
+    _car.context.stroke();
+
+    _car.context.fillStyle = "red";
+    _car.context.fillRect(getX(_car.data.left_headlight) - 2, getY(_car.data.left_headlight) - 2, 4, 4);
+
+    _car.context.fillStyle = "blue";
+    _car.context.fillRect(getX(_car.data.right_headlight) - 2, getY(_car.data.right_headlight) - 2, 4, 4);
+
+    _car.context.fillStyle = "red";
+    _car.context.fillRect(getX(_car.data.left_taillight) - 2, getY(_car.data.left_taillight) - 2, 4, 4);
+
+    _car.context.fillStyle = "blue";
+    _car.context.fillRect(getX(_car.data.right_taillight) - 2, getY(_car.data.right_taillight) - 2, 4, 4);
 
     if (_car.runUpdateLoop) {
       setTimeout(updateCarData, 1000);

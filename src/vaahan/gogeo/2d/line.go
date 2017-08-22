@@ -38,9 +38,11 @@ func (ray *Ray) GetAngle() Angle {
 }
 
 func (ray *Ray) FindPointAtDistance(distance float64) *Point {
-	x := math.Sin(ray.angle.Radians()) * distance
-	y := math.Cos(ray.angle.Radians()) * distance
-	return NewPoint(ray.start.X+x, ray.start.Y+y)
+	x := math.Cos(ray.angle.Radians()) * distance
+	y := math.Sin(ray.angle.Radians()) * distance
+	point := NewPoint(ray.start.X+x, ray.start.Y+y)
+	point.RoundTo(2)
+	return point
 }
 
 type LineSegment struct {

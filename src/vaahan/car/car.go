@@ -12,15 +12,17 @@ import (
 )
 
 type Car struct {
-	Length         float64
-	Width          float64
-	frontCenter    *geo.Point
-	backCenter     *geo.Point
-	LeftHeadlight  *geo.Point `json:"left_headlight"`
-	RightHeadlight *geo.Point `json:"right_headlight"`
-	LeftTaillight  *geo.Point `json:"left_taillight"`
-	RightTaillight *geo.Point `json:"right_taillight"`
-	Status         string     `json:"status"`
+	Length                             float64
+	Width                              float64
+	FrontCenter                        *geo.Point `json:"front_center"`
+	BackCenter                         *geo.Point `json:"back_center"`
+	internalAngle                      geo.Angle
+	distanceOfLightsFromOppositeCenter float64
+	LHL                                *geo.Point `json:"left_headlight"`
+	RHL                                *geo.Point `json:"right_headlight"`
+	LTL                                *geo.Point `json:"left_taillight"`
+	RTL                                *geo.Point `json:"right_taillight"`
+	Status                             string     `json:"status"`
 }
 
 var (
@@ -32,17 +34,17 @@ func (car *Car) moveForward(units float64) {
 	if units == 0 {
 		units = 1
 	}
-	car.LeftHeadlight.X = car.LeftHeadlight.X + units
-	// car.LeftHeadlight.Y = car.LeftHeadlight.Y + units
+	car.LHL.X = car.LHL.X + units
+	// car.LHL.Y = car.LHL.Y + units
 
-	car.RightHeadlight.X = car.RightHeadlight.X + units
-	// car.RightHeadlight.Y = car.RightHeadlight.Y + units
+	car.RHL.X = car.RHL.X + units
+	// car.RHL.Y = car.RHL.Y + units
 
-	car.LeftTaillight.X = car.LeftTaillight.X + units
-	// car.LeftTaillight.Y = car.LeftTaillight.Y + units
+	car.LTL.X = car.LTL.X + units
+	// car.LTL.Y = car.LTL.Y + units
 
-	car.RightTaillight.X = car.RightTaillight.X + units
-	// car.RightTaillight.Y = car.RightTaillight.Y + units
+	car.RTL.X = car.RTL.X + units
+	// car.RTL.Y = car.RTL.Y + units
 }
 
 func (car *Car) driver() {
@@ -73,18 +75,47 @@ func GetCar() (*Car, error) {
 	return car, nil
 }
 
-func (car *Car) SetRightHeadlight(startVector *geo.Ray) {
-	tan := car.Width / (2 * car.Length)
-	alpha := math.Tanh(tan)
-	distanceOfHeadlightFromStart := car.Length / math.Cos(alpha)
-	theta := startVector.GetAngle().Radians() - alpha
+func (car *Car) setHeadlights(carVector *geo.Ray) {
+	var alpha float64
+	if car.internalAngle == 0 {
+		tan := car.Width / (2 * car.Length)
+		alpha = math.Tanh(tan)
+		car.internalAngle = geo.Angle(alpha)
+		car.distanceOfLightsFromOppositeCenter = car.Length / math.Cos(alpha)
+	} else {
+		alpha = car.internalAngle.Radians()
+	}
 
-	x := math.Cos(theta) * distanceOfHeadlightFromStart
-	y := math.Sin(theta) * distanceOfHeadlightFromStart
+	thetaForRHL := carVector.GetAngle().Radians() - alpha
+	xRelativeForRHL := math.Cos(thetaForRHL) * car.distanceOfLightsFromOppositeCenter
+	yRelativeForRHL := math.Sin(thetaForRHL) * car.distanceOfLightsFromOppositeCenter
+	rightHeadlight := geo.NewPoint(carVector.GetStartPoint().X+xRelativeForRHL, carVector.GetStartPoint().Y+yRelativeForRHL)
+	rightHeadlight.RoundTo(2)
+	car.RHL = rightHeadlight
 
-	rightHeadlight := geo.NewPoint(geo.RoundTo(startVector.GetStartPoint().X+x, 2), geo.RoundTo(startVector.GetStartPoint().Y+y, 2))
+	thetaForLHL := carVector.GetAngle().Radians() + alpha
+	xRelativeForLHL := math.Cos(thetaForLHL) * car.distanceOfLightsFromOppositeCenter
+	yRelativeForLHL := math.Sin(thetaForLHL) * car.distanceOfLightsFromOppositeCenter
+	leftHeadlight := geo.NewPoint(carVector.GetStartPoint().X+xRelativeForLHL, carVector.GetStartPoint().Y+yRelativeForLHL)
+	leftHeadlight.RoundTo(2)
+	car.LHL = leftHeadlight
 
-	car.RightHeadlight = rightHeadlight
+	thetaForTail := math.Pi - (carVector.GetAngle().Radians() + (math.Pi / 2))
+	xRelativeForTail := math.Cos(thetaForTail) * (car.Width / 2)
+	yRelativeForTail := math.Sin(thetaForTail) * (car.Width / 2)
+	var leftTaillight *geo.Point
+	if carVector.GetAngle().Radians() >= 0 && carVector.GetAngle().Radians() < math.Pi/2 {
+		leftTaillight = geo.NewPoint(carVector.GetStartPoint().X-xRelativeForTail, carVector.GetStartPoint().Y+yRelativeForTail)
+	}
+	leftTaillight.RoundTo(2)
+	car.LTL = leftTaillight
+
+	var rightTaillight *geo.Point
+	if carVector.GetAngle().Radians() >= 0 && carVector.GetAngle().Radians() < math.Pi/2 {
+		rightTaillight = geo.NewPoint(carVector.GetStartPoint().X+xRelativeForTail, carVector.GetStartPoint().Y-yRelativeForTail)
+	}
+	rightTaillight.RoundTo(2)
+	car.RTL = rightTaillight
 }
 
 func New(track *track.Track) *Car {
@@ -93,18 +124,16 @@ func New(track *track.Track) *Car {
 	length := float64(50)
 	width := float64(30)
 	car = &Car{
-		Length:         length,
-		Width:          width,
-		frontCenter:    startVector.FindPointAtDistance(length),
-		backCenter:     startVector.GetStartPoint(),
-		LeftHeadlight:  geo.NewPoint(50, 265),
-		LeftTaillight:  geo.NewPoint(0, 265),
-		RightTaillight: geo.NewPoint(0, 235),
-		Status:         "stopped",
+		Length:      length,
+		Width:       width,
+		FrontCenter: startVector.FindPointAtDistance(length),
+		BackCenter:  startVector.GetStartPoint(),
+		RTL:         geo.NewPoint(0, 235),
+		Status:      "stopped",
 	}
 
-	car.SetRightHeadlight(startVector)
+	car.setHeadlights(startVector)
 
-	go car.driver()
+	// go car.driver()
 	return car
 }
