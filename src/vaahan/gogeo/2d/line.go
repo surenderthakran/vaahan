@@ -29,12 +29,16 @@ func NewRayByPointAndDirection(start *Point, angle Angle) *Ray {
 	}
 }
 
-func (ray *Ray) GetStartPoint() *Point {
+func (ray *Ray) StartPoint() *Point {
 	return ray.start
 }
 
-func (ray *Ray) GetAngle() Angle {
+func (ray *Ray) Angle() Angle {
 	return ray.angle
+}
+
+func (ray *Ray) SetAngle(angle Angle) {
+	ray.angle = angle
 }
 
 func (ray *Ray) FindPointAtDistance(distance float64) *Point {

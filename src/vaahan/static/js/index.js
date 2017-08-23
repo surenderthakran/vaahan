@@ -20,6 +20,7 @@
     });
     _map.canvas = document.getElementById('map');
     _car.canvas = document.getElementById('car');
+    initCarControls();
   });
 
   function getX(point) {
@@ -98,9 +99,6 @@
       }
     );
 
-    _car.runUpdateLoop = false;
-    document.getElementById('start-pause').textContent = "Start Driving";
-
     fetch(myRequest)
     .then(function(response) {
       console.log(response);
@@ -113,8 +111,10 @@
     .then(function(car) {
       _car.data = car;
       console.log(_car.data);
-      initCarControls();
+      _car.runUpdateLoop = false;
+      _car.context.clearRect(0, 0, _car.canvas.width, _car.canvas.height)
       drawCar();
+      document.getElementById('start-pause').textContent = "Start Driving";
     })
     .catch(function(err) {
       console.error(err);
@@ -123,15 +123,13 @@
 
   function initCarControls() {
     document.getElementById('start-pause').addEventListener('click', (event) => {
-      if (_car.data.status === "stopped") {
+      console.log(_car.data.status);
+      if (_car.data.status === "STOP") {
         driveCar();
-        event.target.textContent = "Pause Driving";
-      } else if (_car.data.status === "driving") {
-        pauseCar();
-        event.target.textContent = "Resume Driving";
-      } else if (_car.data.status === "paused") {
-        driveCar();
-        event.target.textContent = "Pause Driving";
+        event.target.textContent = "Stop Driving";
+      } else if (_car.data.status === "DRIVE") {
+        stopCar();
+        event.target.textContent = "Start Driving";
       }
     });
 
@@ -143,7 +141,7 @@
 
   function drawCar() {
     console.log("inside drawCar()");
-    _car.context.clearRect(0, 0, _car.canvas.width, _car.canvas.height)
+    _car.context.clearRect(getX(_car.data.front_left) - 100, getY(_car.data.front_left) - 100, 200, 200)
 
     _car.context.beginPath();
     _car.context.moveTo(getX(_car.data.front_left), getY(_car.data.front_left));
@@ -176,42 +174,8 @@
     _car.context.fillRect(getX(_car.data.back_right) - 2, getY(_car.data.back_right) - 2, 4, 4);
 
     if (_car.runUpdateLoop) {
-      setTimeout(updateCarData, 1000);
+      setTimeout(updateCarData, 500);
     }
-  }
-
-  function driveCar() {
-    var myHeaders = new Headers();
-    var myRequest = new Request(
-      window.location.origin + '/api/drive_car',
-      {
-        method: 'GET',
-        headers: myHeaders,
-        mode: 'cors',
-        cache: 'default',
-      }
-    );
-
-    _car.runUpdateLoop = true;
-
-    fetch(myRequest)
-    .then(function(response) {
-      console.log(response);
-      if(response.ok) {
-        return response.json();
-      } else {
-        throw Error(response.statusText);
-      }
-    })
-    .then(function(car) {
-      _car.data = car;
-      console.log(_car.data);
-      drawCar();
-      document.getElementById('start-pause').textContent = "Pause Driving";
-    })
-    .catch(function(err) {
-      console.error(err);
-    });
   }
 
   function updateCarData() {
@@ -239,6 +203,74 @@
       _car.data = car;
       console.log(_car.data);
       drawCar();
+    })
+    .catch(function(err) {
+      console.error(err);
+    });
+  }
+
+  function driveCar() {
+    var myHeaders = new Headers();
+    var myRequest = new Request(
+      window.location.origin + '/api/drive_car',
+      {
+        method: 'GET',
+        headers: myHeaders,
+        mode: 'cors',
+        cache: 'default',
+      }
+    );
+
+    fetch(myRequest)
+    .then(function(response) {
+      console.log(response);
+      if(response.ok) {
+        return response.json();
+      } else {
+        throw Error(response.statusText);
+      }
+    })
+    .then(function(car) {
+      _car.data = car;
+      console.log(_car.data);
+      if (!_car.runUpdateLoop) {
+        _car.runUpdateLoop = true;
+        drawCar();
+      }
+      document.getElementById('start-pause').textContent = "Stop Driving";
+    })
+    .catch(function(err) {
+      console.error(err);
+    });
+  }
+
+  function stopCar() {
+    var myHeaders = new Headers();
+    var myRequest = new Request(
+      window.location.origin + '/api/stop_car',
+      {
+        method: 'GET',
+        headers: myHeaders,
+        mode: 'cors',
+        cache: 'default',
+      }
+    );
+
+    fetch(myRequest)
+    .then(function(response) {
+      console.log(response);
+      if(response.ok) {
+        return response.json();
+      } else {
+        throw Error(response.statusText);
+      }
+    })
+    .then(function(car) {
+      _car.data = car;
+      console.log(_car.data);
+      _car.runUpdateLoop = false;
+      // drawCar();
+      document.getElementById('start-pause').textContent = "Start Driving";
     })
     .catch(function(err) {
       console.error(err);

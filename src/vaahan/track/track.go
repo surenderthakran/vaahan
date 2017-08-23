@@ -4,8 +4,6 @@ import (
 	"math"
 
 	geo "vaahan/gogeo/2d"
-
-	glog "github.com/golang/glog"
 )
 
 type Track struct {
@@ -23,14 +21,13 @@ var (
 
 func GetTrack(trackID string) (*Track, error) {
 	boundary := geo.NewRectangleByCorners(origin, oppositeOrigin)
-	glog.Info(boundary)
 	track := &Track{
 		ID:       "1",
 		Height:   500,
 		Width:    1000,
 		Boundary: boundary,
 		// StartVector: geo.NewRayByPointAndDirection(&geo.Point{20, 250}, geo.Angle(0)),
-		StartVector: geo.NewRayByPointAndDirection(&geo.Point{100, 250}, geo.Angle(0*math.Pi)),
+		StartVector: geo.NewRayByPointAndDirection(&geo.Point{500, 250}, geo.Angle(math.Pi/10)),
 	}
 	return track, nil
 }

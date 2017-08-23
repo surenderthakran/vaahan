@@ -73,9 +73,29 @@ func main() {
 			return
 		}
 
-		glog.Info(car)
 		car.Drive()
-		glog.Info(car)
+
+		response, err := json.Marshal(car)
+		if err != nil {
+			glog.Error(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(response)
+	})
+
+	http.HandleFunc("/api/stop_car", func(w http.ResponseWriter, r *http.Request) {
+		glog.Info("Request: /api/stop_car")
+		car, err := car.GetCar()
+		if err != nil {
+			glog.Error(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		car.Stop()
 
 		response, err := json.Marshal(car)
 		if err != nil {
@@ -89,7 +109,7 @@ func main() {
 	})
 
 	http.HandleFunc("/api/get_car", func(w http.ResponseWriter, r *http.Request) {
-		glog.Info("Request: /api/get_car")
+		// glog.Info("Request: /api/get_car")
 		car, err := car.GetCar()
 		if err != nil {
 			glog.Error(err)

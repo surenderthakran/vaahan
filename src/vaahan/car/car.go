@@ -14,62 +14,38 @@ import (
 type Car struct {
 	Length                              float64
 	Width                               float64
-	acceleration                        float64
 	speed                               float64
-	topSpeed                            float64
-	turningRadius                       float64
+	turningAngle                        geo.Angle
 	FrontCenter                         *geo.Point `json:"front_center"`
 	BackCenter                          *geo.Point `json:"back_center"`
 	vector                              *geo.Ray
 	internalAngle                       geo.Angle
 	distanceOfCornersFromOppositeCenter float64
+	commChannel                         chan string
 	FL                                  *geo.Point `json:"front_left"`
 	FR                                  *geo.Point `json:"front_right"`
 	BL                                  *geo.Point `json:"back_left"`
 	BR                                  *geo.Point `json:"back_right"`
-	Status                              string     `json:"status"`
+	Status                              CarStatus  `json:"status"`
 }
+
+type CarStatus string
 
 var (
-	car *Car
+	car      *Car
+	carSTOP  CarStatus = "STOP"
+	carDRIVE CarStatus = "DRIVE"
 )
 
-func (car *Car) moveForward(units float64) {
-	glog.Info("inside car.moveForward()")
-	if units == 0 {
-		units = 1
-	}
-	car.FL.X = car.FL.X + units
-	// car.FL.Y = car.FL.Y + units
-
-	car.FR.X = car.FR.X + units
-	// car.FR.Y = car.FR.Y + units
-
-	car.BL.X = car.BL.X + units
-	// car.BL.Y = car.BL.Y + units
-
-	car.BR.X = car.BR.X + units
-	// car.BR.Y = car.BR.Y + units
-}
-
-func (car *Car) driver() {
-	glog.Info("inside car.driver()")
-	// instruction := ""
-	for {
-		glog.Info("reading from channel")
-		if car.Status == "driving" {
-			car.moveForward(0)
-		}
-		time.Sleep(time.Second * 1)
-	}
-}
-
 func (car *Car) Drive() {
-	car.Status = "driving"
+	if car.Status == carSTOP {
+		go car.drive()
+	}
+	car.Status = carDRIVE
 }
 
-func (car *Car) Pause() {
-	car.Status = "paused"
+func (car *Car) Stop() {
+	car.Status = carSTOP
 }
 
 func GetCar() (*Car, error) {
@@ -78,6 +54,38 @@ func GetCar() (*Car, error) {
 		return nil, fmt.Errorf("car not found")
 	}
 	return car, nil
+}
+
+func (car *Car) drive() {
+	for {
+		if car.Status == carSTOP {
+			glog.Info("stopping car")
+			break
+		} else if car.Status == carDRIVE {
+			glog.Info("car is moving")
+			car.turnRight()
+			car.updateCorners()
+		}
+		time.Sleep(time.Second / 2)
+	}
+}
+
+func (car *Car) moveForward() {
+	glog.Info("inside car.moveForward()")
+	point := car.vector.FindPointAtDistance(car.speed)
+	car.vector = geo.NewRayByPointAndDirection(point, car.vector.Angle())
+}
+
+func (car *Car) turnRight() {
+	glog.Info("inside car.turnRight()")
+	car.vector.SetAngle(car.vector.Angle() - car.turningAngle)
+	car.moveForward()
+}
+
+func (car *Car) turnLeft() {
+	glog.Info("inside car.turnLeft()")
+	car.vector.SetAngle(car.vector.Angle() + car.turningAngle)
+	car.moveForward()
 }
 
 func (car *Car) updateCorners() {
@@ -91,52 +99,53 @@ func (car *Car) updateCorners() {
 		alpha = car.internalAngle.Radians()
 	}
 
-	thetaForFR := car.vector.GetAngle().Radians() - alpha
+	thetaForFR := car.vector.Angle().Radians() - alpha
 	xRelativeForFR := math.Cos(thetaForFR) * car.distanceOfCornersFromOppositeCenter
 	yRelativeForFR := math.Sin(thetaForFR) * car.distanceOfCornersFromOppositeCenter
-	frontRight := geo.NewPoint(car.vector.GetStartPoint().X+xRelativeForFR, car.vector.GetStartPoint().Y+yRelativeForFR)
+	frontRight := geo.NewPoint(car.vector.StartPoint().X+xRelativeForFR, car.vector.StartPoint().Y+yRelativeForFR)
 	frontRight.RoundTo(2)
 	car.FR = frontRight
 
-	thetaForFL := car.vector.GetAngle().Radians() + alpha
+	thetaForFL := car.vector.Angle().Radians() + alpha
 	xRelativeForFL := math.Cos(thetaForFL) * car.distanceOfCornersFromOppositeCenter
 	yRelativeForFL := math.Sin(thetaForFL) * car.distanceOfCornersFromOppositeCenter
-	frontLeft := geo.NewPoint(car.vector.GetStartPoint().X+xRelativeForFL, car.vector.GetStartPoint().Y+yRelativeForFL)
+	frontLeft := geo.NewPoint(car.vector.StartPoint().X+xRelativeForFL, car.vector.StartPoint().Y+yRelativeForFL)
 	frontLeft.RoundTo(2)
 	car.FL = frontLeft
 
-	thetaForBack := math.Pi - (car.vector.GetAngle().Radians() + (math.Pi / 2))
+	thetaForBack := math.Pi - (car.vector.Angle().Radians() + (math.Pi / 2))
 	xRelativeForBackCorners := math.Cos(thetaForBack) * (car.Width / 2)
 	yRelativeForBackCorners := math.Sin(thetaForBack) * (car.Width / 2)
 
 	var backLeft *geo.Point
-	backLeft = geo.NewPoint(car.vector.GetStartPoint().X-xRelativeForBackCorners, car.vector.GetStartPoint().Y+yRelativeForBackCorners)
+	backLeft = geo.NewPoint(car.vector.StartPoint().X-xRelativeForBackCorners, car.vector.StartPoint().Y+yRelativeForBackCorners)
 	backLeft.RoundTo(2)
 	car.BL = backLeft
 
 	var backRight *geo.Point
-	backRight = geo.NewPoint(car.vector.GetStartPoint().X+xRelativeForBackCorners, car.vector.GetStartPoint().Y-yRelativeForBackCorners)
+	backRight = geo.NewPoint(car.vector.StartPoint().X+xRelativeForBackCorners, car.vector.StartPoint().Y-yRelativeForBackCorners)
 	backRight.RoundTo(2)
 	car.BR = backRight
 
 	car.FrontCenter = car.vector.FindPointAtDistance(car.Length)
-	car.BackCenter = car.vector.GetStartPoint()
+	car.BackCenter = car.vector.StartPoint()
 }
 
 func New(track *track.Track) *Car {
-	car = &Car{
-		Length:        38.5,
-		Width:         16.95,
-		acceleration:  67567.57,
-		speed:         0,
-		topSpeed:      430.55,
-		turningRadius: 48,
-		vector:        track.StartVector,
-		Status:        "stopped",
+	if car == nil {
+		car = &Car{
+			Length:       40,
+			Width:        18,
+			speed:        10,
+			turningAngle: math.Pi / 8,
+			vector:       track.StartVector,
+			Status:       carSTOP,
+		}
+	} else {
+		car.vector = track.StartVector
+		car.Status = carSTOP
 	}
-
 	car.updateCorners()
 
-	// go car.driver()
 	return car
 }
