@@ -111,10 +111,8 @@
     .then(function(car) {
       _car.data = car;
       console.log(_car.data);
-      _car.runUpdateLoop = false;
       _car.context.clearRect(0, 0, _car.canvas.width, _car.canvas.height)
-      drawCar();
-      document.getElementById('start-pause').textContent = "Start Driving";
+      updateCarControls();
     })
     .catch(function(err) {
       console.error(err);
@@ -126,10 +124,10 @@
       console.log(_car.data.status);
       if (_car.data.status === "STOP") {
         driveCar();
-        event.target.textContent = "Stop Driving";
+        // event.target.textContent = "Stop Driving";
       } else if (_car.data.status === "DRIVE") {
         stopCar();
-        event.target.textContent = "Start Driving";
+        // event.target.textContent = "Start Driving";
       }
     });
 
@@ -139,46 +137,58 @@
     });
   }
 
+  function updateCarControls() {
+    if (_car.data.status === "STOP") {
+      _car.runUpdateLoop = false;
+      drawCar();
+      document.getElementById('start-pause').textContent = "Start Driving";
+    } else if (_car.data.status === "DRIVE") {
+      _car.runUpdateLoop = true;
+      drawCar();
+      document.getElementById('start-pause').textContent = "Stop Driving";
+    }
+  }
+
   function drawCar() {
     console.log("inside drawCar()");
-    _car.context.clearRect(getX(_car.data.front_left) - 100, getY(_car.data.front_left) - 100, 200, 200)
+    _car.context.clearRect(getX(_car.data.points.front_left) - 100, getY(_car.data.points.front_left) - 100, 200, 200)
 
     _car.context.beginPath();
-    _car.context.moveTo(getX(_car.data.front_left), getY(_car.data.front_left));
-    _car.context.lineTo(getX(_car.data.front_right), getY(_car.data.front_right));
+    _car.context.moveTo(getX(_car.data.points.front_left), getY(_car.data.points.front_left));
+    _car.context.lineTo(getX(_car.data.points.front_right), getY(_car.data.points.front_right));
     _car.context.lineWidth = 3;
     _car.context.stroke();
-    _car.context.lineTo(getX(_car.data.back_right), getY(_car.data.back_right));
+    _car.context.lineTo(getX(_car.data.points.back_right), getY(_car.data.points.back_right));
     _car.context.lineWidth = 0.5;
-    _car.context.lineTo(getX(_car.data.back_left), getY(_car.data.back_left));
-    _car.context.lineTo(getX(_car.data.front_left), getY(_car.data.front_left));
+    _car.context.lineTo(getX(_car.data.points.back_left), getY(_car.data.points.back_left));
+    _car.context.lineTo(getX(_car.data.points.front_left), getY(_car.data.points.front_left));
     _car.context.closePath();
     _car.context.stroke();
     _car.context.fillStyle = "yellow";
     _car.context.fill();
 
-    _car.context.moveTo(getX(_car.data.back_center), getY(_car.data.back_center));
-    _car.context.lineTo(getX(_car.data.front_center), getY(_car.data.front_center));
+    _car.context.moveTo(getX(_car.data.points.back_center), getY(_car.data.points.back_center));
+    _car.context.lineTo(getX(_car.data.points.front_center), getY(_car.data.points.front_center));
     _car.context.stroke();
 
     _car.context.fillStyle = "red";
-    _car.context.fillRect(getX(_car.data.front_left) - 2, getY(_car.data.front_left) - 2, 4, 4);
+    _car.context.fillRect(getX(_car.data.points.front_left) - 2, getY(_car.data.points.front_left) - 2, 4, 4);
 
     _car.context.fillStyle = "blue";
-    _car.context.fillRect(getX(_car.data.front_right) - 2, getY(_car.data.front_right) - 2, 4, 4);
+    _car.context.fillRect(getX(_car.data.points.front_right) - 2, getY(_car.data.points.front_right) - 2, 4, 4);
 
     _car.context.fillStyle = "red";
-    _car.context.fillRect(getX(_car.data.back_left) - 2, getY(_car.data.back_left) - 2, 4, 4);
+    _car.context.fillRect(getX(_car.data.points.back_left) - 2, getY(_car.data.points.back_left) - 2, 4, 4);
 
     _car.context.fillStyle = "blue";
-    _car.context.fillRect(getX(_car.data.back_right) - 2, getY(_car.data.back_right) - 2, 4, 4);
+    _car.context.fillRect(getX(_car.data.points.back_right) - 2, getY(_car.data.points.back_right) - 2, 4, 4);
 
     if (_car.runUpdateLoop) {
-      setTimeout(updateCarData, 500);
+      setTimeout(getCarData, 500);
     }
   }
 
-  function updateCarData() {
+  function getCarData() {
     var myHeaders = new Headers();
     var myRequest = new Request(
       window.location.origin + '/api/get_car',
@@ -202,7 +212,7 @@
     .then(function(car) {
       _car.data = car;
       console.log(_car.data);
-      drawCar();
+      updateCarControls();
     })
     .catch(function(err) {
       console.error(err);
@@ -233,11 +243,7 @@
     .then(function(car) {
       _car.data = car;
       console.log(_car.data);
-      if (!_car.runUpdateLoop) {
-        _car.runUpdateLoop = true;
-        drawCar();
-      }
-      document.getElementById('start-pause').textContent = "Stop Driving";
+      updateCarControls();
     })
     .catch(function(err) {
       console.error(err);
@@ -268,9 +274,7 @@
     .then(function(car) {
       _car.data = car;
       console.log(_car.data);
-      _car.runUpdateLoop = false;
-      // drawCar();
-      document.getElementById('start-pause').textContent = "Start Driving";
+      updateCarControls();
     })
     .catch(function(err) {
       console.error(err);

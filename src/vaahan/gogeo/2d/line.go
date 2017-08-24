@@ -9,11 +9,11 @@ type Line struct {
 	yIntercept float64
 }
 
-func (line *Line) GetSlope() float64 {
+func (line *Line) Slope() float64 {
 	return line.slope
 }
 
-func (line *Line) GetYIntercept() float64 {
+func (line *Line) YIntercept() float64 {
 	return line.yIntercept
 }
 
@@ -55,15 +55,19 @@ type LineSegment struct {
 	yIntercept float64
 }
 
-func (segment *LineSegment) GetStartPoint() *Point {
+func (segment *LineSegment) StartPoint() *Point {
 	return segment.start
 }
 
-func (segment *LineSegment) GetSlope() float64 {
+func (segment *LineSegment) EndPoint() *Point {
+	return segment.end
+}
+
+func (segment *LineSegment) Slope() float64 {
 	return segment.slope
 }
 
-func (segment *LineSegment) GetYIntercept() float64 {
+func (segment *LineSegment) YIntercept() float64 {
 	return segment.yIntercept
 }
 

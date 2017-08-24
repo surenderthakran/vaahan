@@ -23,3 +23,7 @@ func NewRectangleByCorners(sw, ne *Point) *Rectangle {
 	}
 	return rectangle
 }
+
+func (rect *Rectangle) Sides() []*LineSegment {
+	return rect.sides
+}
