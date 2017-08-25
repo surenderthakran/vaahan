@@ -80,6 +80,7 @@ func (car *Car) drive() {
 		} else if car.Status == carDRIVE {
 			glog.Info("car is moving")
 			if car.collision() {
+				glog.Info("car has collided")
 				car.Status = carSTOP
 			} else {
 				car.turnRight()
@@ -90,10 +91,15 @@ func (car *Car) drive() {
 	}
 }
 
-func (car *Car) moveForward() {
+func (car *Car) moveForward() error {
 	glog.Info("inside car.moveForward()")
 	point := car.vector.FindPointAtDistance(car.specs.speed)
-	car.vector = geo.NewRayByPointAndDirection(point, car.vector.Angle())
+	newCarVector, err := geo.NewRayByPointAndDirection(point, car.vector.Angle())
+	if err != nil {
+		return fmt.Errorf("invalid car vector: %v", err)
+	}
+	car.vector = newCarVector
+	return nil
 }
 
 func (car *Car) turnRight() {
@@ -110,12 +116,23 @@ func (car *Car) turnLeft() {
 
 func (car *Car) collision() bool {
 	glog.Info("inside car.collision()")
+	if !car.insideTrack() {
+		return true
+	}
 	for _, sensor := range car.sensors {
 		glog.Infof("sensor: %v, %v", sensor.ray.StartPoint(), sensor.ray.Angle())
 		for _, obstacle := range car.obstacles {
 			glog.Infof("obstacle: %v, %v", obstacle.StartPoint(), obstacle.EndPoint())
+			if obstacle.HasPoint(sensor.ray.StartPoint()) {
+				return true
+			}
 		}
 	}
+	return true
+}
+
+func (car *Car) insideTrack() bool {
+	glog.Info("inside car.insideTrack()")
 	return true
 }
 
@@ -162,19 +179,24 @@ func (car *Car) updateCorners() {
 	car.Points.BackCenter = car.vector.StartPoint()
 }
 
-func (car *Car) initSensors() {
+func (car *Car) initSensors() error {
+	frontCenterRay, err := geo.NewRayByPointAndDirection(car.Points.FrontCenter, car.vector.Angle())
+	if err != nil {
+		return fmt.Errorf("unable to load sensors: %v", err)
+	}
 	car.sensors = []*sensor{
 		&sensor{
-			ray: geo.NewRayByPointAndDirection(car.Points.FrontCenter, car.vector.Angle()),
+			ray: frontCenterRay,
 		},
 	}
+	return nil
 }
 
 func (car *Car) readObstacles() {
 	car.obstacles = car.track.Boundary.Sides()
 }
 
-func New(track *track.Track) *Car {
+func New(track *track.Track) (*Car, error) {
 	if car == nil {
 		car = &Car{
 			track:  track,
@@ -192,8 +214,10 @@ func New(track *track.Track) *Car {
 		car.Status = carSTOP
 	}
 	car.updateCorners()
-	car.initSensors()
+	if err := car.initSensors(); err != nil {
+		return nil, fmt.Errorf("unable to start car: %v", err)
+	}
 	car.readObstacles()
 
-	return car
+	return car, nil
 }

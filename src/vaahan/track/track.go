@@ -1,6 +1,7 @@
 package track
 
 import (
+	"fmt"
 	"math"
 
 	geo "vaahan/gogeo/2d"
@@ -20,13 +21,20 @@ var (
 )
 
 func GetTrack(trackID string) (*Track, error) {
-	boundary := geo.NewRectangleByCorners(origin, oppositeOrigin)
+	boundary, err := geo.NewRectangleByCorners(origin, oppositeOrigin)
+	if err != nil {
+		return nil, fmt.Errorf("unable to define track boundary: %s.", err)
+	}
+	startVector, err := geo.NewRayByPointAndDirection(&geo.Point{100, 250}, geo.Angle(math.Pi/10))
+	if err != nil {
+		return nil, fmt.Errorf("unable to define track's starting vector: %s.", err)
+	}
 	track := &Track{
 		ID:          "1",
 		Height:      500,
 		Width:       1000,
 		Boundary:    boundary,
-		StartVector: geo.NewRayByPointAndDirection(&geo.Point{100, 250}, geo.Angle(math.Pi/10)),
+		StartVector: startVector,
 	}
 	return track, nil
 }

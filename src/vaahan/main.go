@@ -51,7 +51,12 @@ func main() {
 			return
 		}
 
-		car := car.New(track)
+		car, err := car.New(track)
+		if err != nil {
+			glog.Error(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		response, err := json.Marshal(car)
 		if err != nil {

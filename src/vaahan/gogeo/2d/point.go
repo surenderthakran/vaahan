@@ -29,3 +29,10 @@ func (p *Point) RoundTo(precision int) {
 func (p1 *Point) Equal(p2 *Point) bool {
 	return p1.X == p2.X && p1.Y == p2.Y
 }
+
+func (p *Point) Valid() bool {
+	if math.IsNaN(p.X) || math.IsNaN(p.Y) || math.IsInf(p.X, 0) || math.IsInf(p.Y, 0) {
+		return false
+	}
+	return true
+}

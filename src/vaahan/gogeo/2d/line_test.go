@@ -44,3 +44,43 @@ func TestRayFindPointAtDistance(t *testing.T) {
 		}
 	}
 }
+
+func TestLineSegmentHasPoint(t *testing.T) {
+	testCases := []struct {
+		segment *LineSegment
+		point   *Point
+		want    bool
+	}{
+		{
+			segment: &LineSegment{
+				start: &Point{0, 0},
+				end:   &Point{0, 500},
+			},
+			point: &Point{0, 100},
+			want:  true,
+		},
+		{
+			segment: &LineSegment{
+				start: &Point{0, 0},
+				end:   &Point{0, -500},
+			},
+			point: &Point{0, 100},
+			want:  false,
+		},
+		{
+			segment: &LineSegment{
+				start: &Point{0, 0},
+				end:   &Point{500, 500},
+			},
+			point: &Point{100, 100},
+			want:  true,
+		},
+	}
+
+	for _, test := range testCases {
+		hasPoint := test.segment.HasPoint(test.point)
+		if hasPoint != test.want {
+			t.Errorf("%v.HasPoint(%v) want: %v got: %v", test.segment, test.point, test.want, hasPoint)
+		}
+	}
+}

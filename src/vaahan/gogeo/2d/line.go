@@ -1,6 +1,7 @@
 package gogeo
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -22,11 +23,14 @@ type Ray struct {
 	angle Angle
 }
 
-func NewRayByPointAndDirection(start *Point, angle Angle) *Ray {
+func NewRayByPointAndDirection(start *Point, angle Angle) (*Ray, error) {
+	if !start.Valid() {
+		return nil, fmt.Errorf("unable to create ray: starting point must be valid.")
+	}
 	return &Ray{
 		start: start,
 		angle: angle,
-	}
+	}, nil
 }
 
 func (ray *Ray) StartPoint() *Point {
@@ -71,7 +75,29 @@ func (segment *LineSegment) YIntercept() float64 {
 	return segment.yIntercept
 }
 
-func NewLineSegmentByPoints(start, end *Point) *LineSegment {
+func (segment *LineSegment) HasPoint(point *Point) bool {
+	fmt.Println("inside segment.HasPoint()")
+	fmt.Println(point)
+	AB := segment.StartPoint().DistanceFrom(point)
+	BC := point.DistanceFrom(segment.EndPoint())
+	AC := segment.StartPoint().DistanceFrom(segment.EndPoint())
+	if AB+BC == AC {
+		return true
+	}
+	return false
+}
+
+func (segment *LineSegment) String() string {
+	return fmt.Sprintf("LineSegment{%v, %v}", segment.StartPoint(), segment.EndPoint())
+}
+
+func NewLineSegmentByPoints(start, end *Point) (*LineSegment, error) {
+	if start.Equal(end) {
+		return nil, fmt.Errorf("unable to create line segment: starting and ending points cannot be same.")
+	}
+	if !start.Valid() || !end.Valid() {
+		return nil, fmt.Errorf("unable to create line segment: starting and ending points must be valid.")
+	}
 	segment := LineSegment{
 		start: start,
 		end:   end,
@@ -79,12 +105,15 @@ func NewLineSegmentByPoints(start, end *Point) *LineSegment {
 	slope, yIntercept := GetSlopeAndYInterceptByPoints(start, end)
 	segment.slope = slope
 	segment.yIntercept = yIntercept
-	return &segment
+	return &segment, nil
 }
 
 func GetSlopeAndYInterceptByPoints(start, end *Point) (float64, float64) {
 	slope := (end.Y - start.Y) / (end.X - end.X)
 	yIntercept := start.Y - (slope * start.X)
+	if math.IsNaN(yIntercept) {
+		yIntercept = 0
+	}
 	return slope, yIntercept
 }
 
