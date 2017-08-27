@@ -110,7 +110,7 @@ func NewLineSegmentByPoints(start, end *Point) (*LineSegment, error) {
 
 func GetSlopeAndYInterceptByPoints(start, end *Point) (float64, float64) {
 	slope := (end.Y - start.Y) / (end.X - end.X)
-	yIntercept := start.Y - (slope * start.X)
+	yIntercept := GetYInterceptByPointAndSlope(start, slope)
 	if math.IsNaN(yIntercept) {
 		yIntercept = 0
 	}

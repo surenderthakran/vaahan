@@ -78,7 +78,7 @@ func (car *Car) drive() {
 			glog.Info("stopping car")
 			break
 		} else if car.Status == carDRIVE {
-			glog.Info("car is moving")
+			glog.Info("driving car")
 			if car.collision() {
 				glog.Info("car has collided")
 				car.Status = carSTOP
@@ -116,9 +116,11 @@ func (car *Car) turnLeft() {
 
 func (car *Car) collision() bool {
 	glog.Info("inside car.collision()")
+	// is currently colliding
 	if !car.insideTrack() {
 		return true
 	}
+	// get sensor readings
 	for _, sensor := range car.sensors {
 		glog.Infof("sensor: %v, %v", sensor.ray.StartPoint(), sensor.ray.Angle())
 		for _, obstacle := range car.obstacles {
@@ -128,11 +130,22 @@ func (car *Car) collision() bool {
 			}
 		}
 	}
-	return true
+	return false
 }
 
 func (car *Car) insideTrack() bool {
 	glog.Info("inside car.insideTrack()")
+	corners := []*geo.Point{
+		car.Points.FL,
+		car.Points.FR,
+		car.Points.BL,
+		car.Points.BR,
+	}
+	for _, corner := range corners {
+		if !car.track.PointInTrack(corner) {
+			return false
+		}
+	}
 	return true
 }
 
@@ -193,7 +206,7 @@ func (car *Car) initSensors() error {
 }
 
 func (car *Car) readObstacles() {
-	car.obstacles = car.track.Boundary.Sides()
+	car.obstacles = car.track.Boundary.Sides
 }
 
 func New(track *track.Track) (*Car, error) {

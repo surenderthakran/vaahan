@@ -84,7 +84,7 @@
     console.log("inside drawBoundary()");
     let boundary = _map.track.boundary;
     _map.context.fillStyle = '#8ae291';
-    _map.context.fillRect(getX(boundary.top_left), getY(boundary.top_left), boundary.width, boundary.height);
+    _map.context.fillRect(getX(boundary.shape.top_left), getY(boundary.shape.top_left), boundary.shape.width, boundary.shape.height);
   }
 
   function initCar() {
