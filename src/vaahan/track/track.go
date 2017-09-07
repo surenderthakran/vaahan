@@ -39,7 +39,7 @@ func GetTrack(trackID string) (*Track, error) {
 		Shape: shape,
 		Sides: sides,
 	}
-	startVector, err := geo.NewRayByPointAndDirection(&geo.Point{100, 250}, geo.Angle(math.Pi/10))
+	startVector, err := geo.NewRayByPointAndDirection(&geo.Point{500, 250}, geo.Angle(math.Pi/10))
 	if err != nil {
 		return nil, fmt.Errorf("unable to define track's starting vector: %s.", err)
 	}

@@ -21,13 +21,20 @@ func (p1 *Point) DistanceFrom(p2 *Point) float64 {
 	return RoundTo(distance, 2)
 }
 
-func (p *Point) RoundTo(precision int) {
+func (p *Point) RoundTo(precision int) *Point {
 	p.X = RoundTo(p.X, precision)
 	p.Y = RoundTo(p.Y, precision)
+	return p
 }
 
 func (p1 *Point) Equal(p2 *Point) bool {
-	return p1.X == p2.X && p1.Y == p2.Y
+	if (p1 == nil && p2 != nil) || (p1 != nil && p2 == nil) {
+		return false
+	}
+	if p1 == nil && p2 == nil {
+		return true
+	}
+	return Equal(p1.X, p2.X) && Equal(p1.Y, p2.Y)
 }
 
 func (p *Point) Valid() bool {
@@ -35,4 +42,8 @@ func (p *Point) Valid() bool {
 		return false
 	}
 	return true
+}
+
+func (p *Point) Vector() *Vector {
+	return NewVector(p.X, p.Y)
 }

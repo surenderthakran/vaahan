@@ -16,7 +16,7 @@ type Car struct {
 	track     *track.Track
 	obstacles []*geo.LineSegment
 	specs     *CarSpecs
-	sensors   []*sensor
+	Sensors   []*sensor `json:"sensors"`
 	Points    Points    `json:"points"`
 	Status    CarStatus `json:"status"`
 }
@@ -24,12 +24,13 @@ type Car struct {
 type CarStatus string
 
 type Points struct {
-	FL          *geo.Point `json:"front_left"`
-	FR          *geo.Point `json:"front_right"`
-	BL          *geo.Point `json:"back_left"`
-	BR          *geo.Point `json:"back_right"`
-	FrontCenter *geo.Point `json:"front_center"`
-	BackCenter  *geo.Point `json:"back_center"`
+	FL     *geo.Point `json:"front_left"`
+	FR     *geo.Point `json:"front_right"`
+	BL     *geo.Point `json:"back_left"`
+	BR     *geo.Point `json:"back_right"`
+	FC     *geo.Point `json:"front_center"`
+	BC     *geo.Point `json:"back_center"`
+	center *geo.Point `json:"center"`
 }
 
 type CarSpecs struct {
@@ -37,13 +38,14 @@ type CarSpecs struct {
 	width                               float64
 	internalAngle                       geo.Angle
 	distanceOfCornersFromOppositeCenter float64
-	speed                               float64
+	speed                               float64 // distance travelled in oneTimeUnit.
 	turningAngle                        geo.Angle
 }
 
 type sensor struct {
-	ray          *geo.Ray
-	intersection *geo.Point
+	name         string
+	Ray          *geo.Ray   `json:"ray"`
+	Intersection *geo.Point `json:"intersection"`
 	distance     float64
 }
 
@@ -51,6 +53,10 @@ var (
 	car      *Car
 	carSTOP  CarStatus = "STOP"
 	carDRIVE CarStatus = "DRIVE"
+)
+
+const (
+	oneTimeUnit = time.Second / 4
 )
 
 func (car *Car) Drive() {
@@ -78,16 +84,28 @@ func (car *Car) drive() {
 			glog.Info("stopping car")
 			break
 		} else if car.Status == carDRIVE {
-			glog.Info("driving car")
 			if car.collision() {
-				glog.Info("car has collided")
 				car.Status = carSTOP
 			} else {
+				glog.Info("moving car")
+
+				// move car.
 				car.turnRight()
-				car.updateCorners()
+
+				// update car coordinates.
+				if err := car.updatePoints(); err != nil {
+					glog.Info(err)
+					car.Status = carSTOP
+				}
+
+				// update sensors readings.
+				if err := car.updateSensors(); err != nil {
+					glog.Infof("unable to read from sensors: %v", err)
+					car.Status = carSTOP
+				}
 			}
 		}
-		time.Sleep(time.Second / 2)
+		time.Sleep(oneTimeUnit)
 	}
 }
 
@@ -115,26 +133,23 @@ func (car *Car) turnLeft() {
 }
 
 func (car *Car) collision() bool {
-	glog.Info("inside car.collision()")
+	glog.Info("\ninside car.collision()")
 	// is currently colliding
 	if !car.insideTrack() {
 		return true
 	}
-	// get sensor readings
-	for _, sensor := range car.sensors {
-		glog.Infof("sensor: %v, %v", sensor.ray.StartPoint(), sensor.ray.Angle())
-		for _, obstacle := range car.obstacles {
-			glog.Infof("obstacle: %v, %v", obstacle.StartPoint(), obstacle.EndPoint())
-			if obstacle.HasPoint(sensor.ray.StartPoint()) {
-				return true
-			}
+
+	for _, sensor := range car.Sensors {
+		if sensor.distance <= car.specs.speed {
+			glog.Infof("sensor collided: %v, %v, %f", sensor.name, sensor.Ray.Start, sensor.Ray.Angle(), sensor.distance)
+			glog.Info("COLLISION!!")
+			return true
 		}
 	}
 	return false
 }
 
 func (car *Car) insideTrack() bool {
-	glog.Info("inside car.insideTrack()")
 	corners := []*geo.Point{
 		car.Points.FL,
 		car.Points.FR,
@@ -149,7 +164,7 @@ func (car *Car) insideTrack() bool {
 	return true
 }
 
-func (car *Car) updateCorners() {
+func (car *Car) updatePoints() error {
 	var alpha float64
 	if car.specs.internalAngle == 0 {
 		tan := car.specs.width / (2 * car.specs.length)
@@ -163,14 +178,14 @@ func (car *Car) updateCorners() {
 	thetaForFR := car.vector.Angle().Radians() - alpha
 	xRelativeForFR := math.Cos(thetaForFR) * car.specs.distanceOfCornersFromOppositeCenter
 	yRelativeForFR := math.Sin(thetaForFR) * car.specs.distanceOfCornersFromOppositeCenter
-	frontRight := geo.NewPoint(car.vector.StartPoint().X+xRelativeForFR, car.vector.StartPoint().Y+yRelativeForFR)
+	frontRight := geo.NewPoint(car.vector.Start.X+xRelativeForFR, car.vector.Start.Y+yRelativeForFR)
 	frontRight.RoundTo(2)
 	car.Points.FR = frontRight
 
 	thetaForFL := car.vector.Angle().Radians() + alpha
 	xRelativeForFL := math.Cos(thetaForFL) * car.specs.distanceOfCornersFromOppositeCenter
 	yRelativeForFL := math.Sin(thetaForFL) * car.specs.distanceOfCornersFromOppositeCenter
-	frontLeft := geo.NewPoint(car.vector.StartPoint().X+xRelativeForFL, car.vector.StartPoint().Y+yRelativeForFL)
+	frontLeft := geo.NewPoint(car.vector.Start.X+xRelativeForFL, car.vector.Start.Y+yRelativeForFL)
 	frontLeft.RoundTo(2)
 	car.Points.FL = frontLeft
 
@@ -179,29 +194,71 @@ func (car *Car) updateCorners() {
 	yRelativeForBackCorners := math.Sin(thetaForBack) * (car.specs.width / 2)
 
 	var backLeft *geo.Point
-	backLeft = geo.NewPoint(car.vector.StartPoint().X-xRelativeForBackCorners, car.vector.StartPoint().Y+yRelativeForBackCorners)
+	backLeft = geo.NewPoint(car.vector.Start.X-xRelativeForBackCorners, car.vector.Start.Y+yRelativeForBackCorners)
 	backLeft.RoundTo(2)
 	car.Points.BL = backLeft
 
 	var backRight *geo.Point
-	backRight = geo.NewPoint(car.vector.StartPoint().X+xRelativeForBackCorners, car.vector.StartPoint().Y-yRelativeForBackCorners)
+	backRight = geo.NewPoint(car.vector.Start.X+xRelativeForBackCorners, car.vector.Start.Y-yRelativeForBackCorners)
 	backRight.RoundTo(2)
 	car.Points.BR = backRight
 
-	car.Points.FrontCenter = car.vector.FindPointAtDistance(car.specs.length)
-	car.Points.BackCenter = car.vector.StartPoint()
+	car.Points.FC = car.vector.FindPointAtDistance(car.specs.length)
+	car.Points.BC = car.vector.Start
+
+	return nil
 }
 
-func (car *Car) initSensors() error {
-	frontCenterRay, err := geo.NewRayByPointAndDirection(car.Points.FrontCenter, car.vector.Angle())
+func (car *Car) updateSensors() error {
+	// update all sensor's location and orientation according to car.
+	frontCenterRay, err := geo.NewRayByPointAndDirection(car.Points.FC, car.vector.Angle())
 	if err != nil {
 		return fmt.Errorf("unable to load sensors: %v", err)
 	}
-	car.sensors = []*sensor{
+	frontLeftRay, err := geo.NewRayByPointAndDirection(car.Points.FL, car.vector.Angle()+(math.Pi/4))
+	if err != nil {
+		return fmt.Errorf("unable to load sensors: %v", err)
+	}
+	frontRightRay, err := geo.NewRayByPointAndDirection(car.Points.FR, car.vector.Angle()-(math.Pi/4))
+	if err != nil {
+		return fmt.Errorf("unable to load sensors: %v", err)
+	}
+	car.Sensors = []*sensor{
 		&sensor{
-			ray: frontCenterRay,
+			name: "Front Center Sensor",
+			Ray:  frontCenterRay,
+		},
+		&sensor{
+			name: "Front Left Sensor",
+			Ray:  frontLeftRay,
+		},
+		&sensor{
+			name: "Front Right Sensor",
+			Ray:  frontRightRay,
 		},
 	}
+
+	// get sensor readings
+	for _, sensor := range car.Sensors {
+		// reset sensor readings.
+		sensor.Intersection = nil
+		sensor.distance = math.Inf(0)
+
+		// iterate over all obstacles on track.
+		for _, obstacle := range car.obstacles {
+			// find sensor's ray's intersection point with obstacle.
+			if intersection := sensor.Ray.Intersection(obstacle); intersection != nil {
+				distance := sensor.Ray.Start.DistanceFrom(intersection)
+				// update sensor's intersection data if an obstacle is closer than the previous obstacle.
+				if distance < sensor.distance {
+					sensor.Intersection = intersection
+					sensor.distance = distance
+				}
+			}
+		}
+		glog.Infof("sensor: %v\tdistance: %v", sensor.name, sensor.distance)
+	}
+
 	return nil
 }
 
@@ -217,7 +274,7 @@ func New(track *track.Track) (*Car, error) {
 			specs: &CarSpecs{
 				length:       40,
 				width:        18,
-				speed:        10,
+				speed:        5,
 				turningAngle: math.Pi / 8,
 			},
 			Status: carSTOP,
@@ -226,8 +283,12 @@ func New(track *track.Track) (*Car, error) {
 		car.vector = track.StartVector
 		car.Status = carSTOP
 	}
-	car.updateCorners()
-	if err := car.initSensors(); err != nil {
+
+	if err := car.updatePoints(); err != nil {
+		return nil, fmt.Errorf("unable to start car: %v", err)
+	}
+
+	if err := car.updateSensors(); err != nil {
 		return nil, fmt.Errorf("unable to start car: %v", err)
 	}
 	car.readObstacles()

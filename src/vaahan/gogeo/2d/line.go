@@ -19,7 +19,7 @@ func (line *Line) YIntercept() float64 {
 }
 
 type Ray struct {
-	start *Point
+	Start *Point `json:"start_point"`
 	angle Angle
 }
 
@@ -28,13 +28,9 @@ func NewRayByPointAndDirection(start *Point, angle Angle) (*Ray, error) {
 		return nil, fmt.Errorf("unable to create ray: starting point must be valid.")
 	}
 	return &Ray{
-		start: start,
-		angle: angle,
+		Start: start,
+		angle: NormalizeRadian(angle),
 	}, nil
-}
-
-func (ray *Ray) StartPoint() *Point {
-	return ray.start
 }
 
 func (ray *Ray) Angle() Angle {
@@ -42,15 +38,45 @@ func (ray *Ray) Angle() Angle {
 }
 
 func (ray *Ray) SetAngle(angle Angle) {
-	ray.angle = angle
+	ray.angle = NormalizeRadian(angle)
 }
 
 func (ray *Ray) FindPointAtDistance(distance float64) *Point {
 	x := math.Cos(ray.angle.Radians()) * distance
 	y := math.Sin(ray.angle.Radians()) * distance
-	point := NewPoint(ray.start.X+x, ray.start.Y+y)
+	point := NewPoint(ray.Start.X+x, ray.Start.Y+y)
 	point.RoundTo(2)
 	return point
+}
+
+func (ray *Ray) Intersection(segment *LineSegment) *Point {
+	rayOrigin := ray.Start.Vector()
+	rayDirection := NewVectorFromAngle(ray.Angle())
+	point1 := segment.StartPoint().Vector()
+	point2 := segment.EndPoint().Vector()
+
+	v1 := rayOrigin.SubtractVector(point1)
+	v2 := point2.SubtractVector(point1)
+	v3 := NewVector(-rayDirection.Y, rayDirection.X)
+
+	dot := v2.DotProduct(v3)
+	if dot == 0 {
+		return nil
+	}
+
+	t1 := v2.CrossProduct(v1) / dot
+	t2 := v1.DotProduct(v3) / dot
+
+	if t1 >= 0 && t2 >= 0 && t2 <= 1 {
+		intersection := rayOrigin.AddVector(rayDirection.Multiply(t1))
+		return intersection.Point().RoundTo(2)
+	}
+
+	return nil
+}
+
+func (ray *Ray) String() string {
+	return fmt.Sprintf("Ray{%v, %v}", ray.Start, ray.Angle())
 }
 
 type LineSegment struct {
@@ -76,15 +102,14 @@ func (segment *LineSegment) YIntercept() float64 {
 }
 
 func (segment *LineSegment) HasPoint(point *Point) bool {
-	fmt.Println("inside segment.HasPoint()")
-	fmt.Println(point)
 	AB := segment.StartPoint().DistanceFrom(point)
 	BC := point.DistanceFrom(segment.EndPoint())
 	AC := segment.StartPoint().DistanceFrom(segment.EndPoint())
-	if AB+BC == AC {
-		return true
-	}
-	return false
+	return Equal(AB+BC, AC)
+}
+
+func (segment *LineSegment) MidPoint() *Point {
+	return NewPoint((segment.start.X+segment.end.X)/2, (segment.start.Y+segment.end.Y)/2)
 }
 
 func (segment *LineSegment) String() string {
