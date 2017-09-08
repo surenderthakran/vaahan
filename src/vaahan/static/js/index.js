@@ -153,14 +153,13 @@
     console.log("inside drawCar()");
     _car.context.clearRect(0, 0, _car.canvas.width, _car.canvas.height)
 
+    _car.context.lineWidth = 0.5;
+
     // draw car's border.
     _car.context.beginPath();
     _car.context.moveTo(getX(_car.data.points.front_left), getY(_car.data.points.front_left));
     _car.context.lineTo(getX(_car.data.points.front_right), getY(_car.data.points.front_right));
-    _car.context.lineWidth = 3;
-    _car.context.stroke();
     _car.context.lineTo(getX(_car.data.points.back_right), getY(_car.data.points.back_right));
-    _car.context.lineWidth = 0.5;
     _car.context.lineTo(getX(_car.data.points.back_left), getY(_car.data.points.back_left));
     _car.context.lineTo(getX(_car.data.points.front_left), getY(_car.data.points.front_left));
     _car.context.closePath();
@@ -168,25 +167,17 @@
     _car.context.fillStyle = "yellow";
     _car.context.fill();
 
-    // draw car's direction line.
-    _car.context.moveTo(getX(_car.data.points.back_center), getY(_car.data.points.back_center));
-    _car.context.lineTo(getX(_car.data.points.front_center), getY(_car.data.points.front_center));
-    _car.context.stroke();
-
     // draw color points at car's corners.
     _car.context.fillStyle = "red";
     _car.context.fillRect(getX(_car.data.points.front_left) - 2, getY(_car.data.points.front_left) - 2, 4, 4);
-
-    _car.context.fillStyle = "blue";
-    _car.context.fillRect(getX(_car.data.points.front_right) - 2, getY(_car.data.points.front_right) - 2, 4, 4);
-
-    _car.context.fillStyle = "red";
     _car.context.fillRect(getX(_car.data.points.back_left) - 2, getY(_car.data.points.back_left) - 2, 4, 4);
 
     _car.context.fillStyle = "blue";
+    _car.context.fillRect(getX(_car.data.points.front_right) - 2, getY(_car.data.points.front_right) - 2, 4, 4);
     _car.context.fillRect(getX(_car.data.points.back_right) - 2, getY(_car.data.points.back_right) - 2, 4, 4);
 
     // draw car's sensors vision.
+    _car.context.lineWidth = 0.1;
     for (var i in _car.data.sensors) {
       if (_car.data.sensors[i].intersection !== null) {
         _car.context.moveTo(getX(_car.data.sensors[i].ray.start_point), getY(_car.data.sensors[i].ray.start_point));

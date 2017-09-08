@@ -6,6 +6,7 @@ import (
 	"time"
 
 	geo "vaahan/gogeo/2d"
+	"vaahan/gomind"
 	"vaahan/track"
 
 	glog "github.com/golang/glog"
@@ -91,6 +92,7 @@ func (car *Car) drive() {
 
 				// move car.
 				car.turnRight()
+				car.moveForward()
 
 				// update car coordinates.
 				if err := car.updatePoints(); err != nil {
@@ -275,7 +277,7 @@ func New(track *track.Track) (*Car, error) {
 				length:       40,
 				width:        18,
 				speed:        5,
-				turningAngle: math.Pi / 8,
+				turningAngle: math.Pi / 16,
 			},
 			Status: carSTOP,
 		}
@@ -292,6 +294,22 @@ func New(track *track.Track) (*Car, error) {
 		return nil, fmt.Errorf("unable to start car: %v", err)
 	}
 	car.readObstacles()
+
+	trainingSet := [][]float64{
+		[]float64{0.1, 0.2, 0.3},
+		[]float64{0.2, 0.3, 0.5},
+		[]float64{0.3, 0.4, 0.7},
+		[]float64{0.4, 0.5, 0.9},
+	}
+
+	nn, err := gomind.NewNeuralNetwork(2, 3, 1)
+	if err != nil {
+		glog.Info(err)
+	}
+
+	for i := 0; i < 1; i++ {
+		nn.Train(trainingSet[0][0:2], trainingSet[0][2:])
+	}
 
 	return car, nil
 }
