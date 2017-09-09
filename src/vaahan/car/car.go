@@ -91,7 +91,6 @@ func (car *Car) drive() {
 				glog.Info("moving car")
 
 				// move car.
-				car.turnRight()
 				car.moveForward()
 
 				// update car coordinates.

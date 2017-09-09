@@ -31,34 +31,19 @@
     return _map.track.height - point.y;
   }
 
-  function getTrack(trackId) {
-    var myHeaders = new Headers();
-    var myRequest = new Request(
-      window.location.origin + '/api/get_track?id=' + trackId,
-      {
-        method: 'GET',
-        headers: myHeaders,
-        mode: 'cors',
-        cache: 'default',
+  function initCarControls() {
+    document.getElementById('start-pause').addEventListener('click', (event) => {
+      console.log(_car.data.status);
+      if (_car.data.status === "STOP") {
+        driveCar();
+      } else if (_car.data.status === "DRIVE") {
+        stopCar();
       }
-    );
+    });
 
-    fetch(myRequest)
-    .then(function(response) {
-      console.log(response);
-      if(response.ok) {
-        return response.json();
-      } else {
-        throw Error(response.statusText);
-      }
-    })
-    .then(function(track) {
-      _map.track = track;
-      console.log(_map.track);
-      initCanvas();
-    })
-    .catch(function(err) {
-      console.error(err);
+    document.getElementById('init-car').addEventListener('click', (event) => {
+      initCar();
+      document.getElementById('start-pause').value = "Start Driving";
     });
   }
 
@@ -73,7 +58,6 @@
     _car.context = _car.canvas.getContext("2d");
 
     drawMap();
-    initCar();
   }
 
   function drawMap() {
@@ -87,65 +71,17 @@
     _map.context.fillRect(getX(boundary.shape.top_left), getY(boundary.shape.top_left), boundary.shape.width, boundary.shape.height);
   }
 
-  function initCar() {
-    var myHeaders = new Headers();
-    var myRequest = new Request(
-      window.location.origin + '/api/init_car?id=' + _map.track.id,
-      {
-        method: 'GET',
-        headers: myHeaders,
-        mode: 'cors',
-        cache: 'default',
-      }
-    );
-
-    fetch(myRequest)
-    .then(function(response) {
-      console.log(response);
-      if(response.ok) {
-        return response.json();
-      } else {
-        throw Error(response.statusText);
-      }
-    })
-    .then(function(car) {
-      _car.data = car;
-      console.log(_car.data);
-      _car.context.clearRect(0, 0, _car.canvas.width, _car.canvas.height)
-      updateCarControls();
-    })
-    .catch(function(err) {
-      console.error(err);
-    });
-  }
-
-  function initCarControls() {
-    document.getElementById('start-pause').addEventListener('click', (event) => {
-      console.log(_car.data.status);
-      if (_car.data.status === "STOP") {
-        driveCar();
-        // event.target.textContent = "Stop Driving";
-      } else if (_car.data.status === "DRIVE") {
-        stopCar();
-        // event.target.textContent = "Start Driving";
-      }
-    });
-
-    document.getElementById('reset-car').addEventListener('click', (event) => {
-      initCar();
-      document.getElementById('start-pause').value = "Start Driving";
-    });
-  }
-
   function updateCarControls() {
     if (_car.data.status === "STOP") {
       _car.runUpdateLoop = false;
       drawCar();
       document.getElementById('start-pause').textContent = "Start Driving";
+      document.getElementById('status').textContent = "Car has stopped.";
     } else if (_car.data.status === "DRIVE") {
       _car.runUpdateLoop = true;
       drawCar();
       document.getElementById('start-pause').textContent = "Stop Driving";
+      document.getElementById('status').textContent = "Car is driving.";
     }
   }
 
@@ -187,11 +123,79 @@
     }
 
     if (_car.runUpdateLoop) {
-      setTimeout(getCarData, 250);
+      setTimeout(getCar, 250);
     }
   }
 
-  function getCarData() {
+  function getTrack(trackId) {
+    var myHeaders = new Headers();
+    var myRequest = new Request(
+      window.location.origin + '/api/get_track?id=' + trackId,
+      {
+        method: 'GET',
+        headers: myHeaders,
+        mode: 'cors',
+        cache: 'default',
+      }
+    );
+
+    fetch(myRequest)
+    .then(function(response) {
+      console.log(response);
+      if(response.ok) {
+        return response.json();
+      } else {
+        throw Error(response.statusText);
+      }
+    })
+    .then(function(track) {
+      _map.track = track;
+      console.log(_map.track);
+      initCanvas();
+    })
+    .catch(function(err) {
+      console.error(err);
+    });
+  }
+
+  function initCar() {
+    if (_map.track == undefined) {
+      document.getElementById('status').textContent = "Select a track first!";
+      return;
+    }
+
+    var myHeaders = new Headers();
+    var myRequest = new Request(
+      window.location.origin + '/api/init_car?id=' + _map.track.id,
+      {
+        method: 'GET',
+        headers: myHeaders,
+        mode: 'cors',
+        cache: 'default',
+      }
+    );
+
+    fetch(myRequest)
+    .then(function(response) {
+      console.log(response);
+      if(response.ok) {
+        return response.json();
+      } else {
+        throw Error(response.statusText);
+      }
+    })
+    .then(function(car) {
+      _car.data = car;
+      console.log(_car.data);
+      _car.context.clearRect(0, 0, _car.canvas.width, _car.canvas.height)
+      updateCarControls();
+    })
+    .catch(function(err) {
+      console.error(err);
+    });
+  }
+
+  function getCar() {
     var myHeaders = new Headers();
     var myRequest = new Request(
       window.location.origin + '/api/get_car',
