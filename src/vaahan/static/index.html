@@ -3,18 +3,18 @@
   <head>
     <title>Vaahan</title>
     <script src="/js/index.js"></script>
+    <script src="/js/draw.js"></script>
+    <script src="/js/request.js"></script>
     <script src="/js/utils.js"></script>
     <link rel="stylesheet" href="/css/main.css">
   </head>
   <body>
     <p>Vaahan</p>
-    <select id="track">
-      <option disabled selected value> -- select a track -- </option>
-      <option value="1">Track 1</option>
-    </select>
-    <button type="button" id="init-car">Initialize Car</button>
     <button type="button" id="start-pause">Start Driving</button>
+    <button type="button" id="reset-car">Reset Car</button>
+    <input type="checkbox" id="restart"> Restart After Collision
     <p id="status"></p>
+    <p id="track"></p>
     <div id="main">
       <canvas id="map"></canvas>
       <canvas id="car"></canvas>

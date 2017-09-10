@@ -7,5 +7,7 @@ Utils.getX = function(point) {
 }
 
 Utils.getY = function(point) {
-  return _trackData.height - point.y;
+  return _map.track.height - point.y;
 }
+
+window.Utils = Utils;

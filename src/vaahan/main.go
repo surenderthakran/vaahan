@@ -12,6 +12,11 @@ import (
 	glog "github.com/golang/glog"
 )
 
+type Sim struct {
+	Car   *car.Car     `json:"car"`
+	Track *track.Track `json:"track"`
+}
+
 var staticFs = http.FileServer(http.Dir("/workspace/src/vaahan/static"))
 
 func main() {
@@ -20,17 +25,28 @@ func main() {
 	// Calling flag.Parse() so that all flag changes are picked.
 	flag.Parse()
 
-	http.HandleFunc("/api/get_track", func(w http.ResponseWriter, r *http.Request) {
-		glog.Info("Request: /api/get_track")
-		trackID := r.URL.Query()["id"][0]
-		track, err := track.GetTrack(trackID)
+	http.HandleFunc("/api/get_sim", func(w http.ResponseWriter, r *http.Request) {
+		glog.Info("Request: /api/get_sim")
+		track, err := track.GetTrack()
 		if err != nil {
-			glog.Error(err)
+			glog.Errorf("unable to get sim: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		response, err := json.Marshal(track)
+		car, err := car.GetCar()
+		if err != nil {
+			glog.Errorf("unable to get sim: %v", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		sim := &Sim{
+			Car:   car,
+			Track: track,
+		}
+
+		response, err := json.Marshal(sim)
 		if err != nil {
 			glog.Error(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -43,15 +59,27 @@ func main() {
 
 	http.HandleFunc("/api/init_car", func(w http.ResponseWriter, r *http.Request) {
 		glog.Info("Request: /api/init_car")
-		trackID := r.URL.Query()["id"][0]
-		track, err := track.GetTrack(trackID)
+		car, err := car.InitCar()
+		if err != nil {
+			glog.Errorf("unable to initialize car: %v", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		response, err := json.Marshal(car)
 		if err != nil {
 			glog.Error(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		car, err := car.New(track)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(response)
+	})
+
+	http.HandleFunc("/api/get_car", func(w http.ResponseWriter, r *http.Request) {
+		glog.Info("Request: /api/get_car")
+		car, err := car.GetCar()
 		if err != nil {
 			glog.Error(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -101,26 +129,6 @@ func main() {
 		}
 
 		car.Stop()
-
-		response, err := json.Marshal(car)
-		if err != nil {
-			glog.Error(err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(response)
-	})
-
-	http.HandleFunc("/api/get_car", func(w http.ResponseWriter, r *http.Request) {
-		// glog.Info("Request: /api/get_car")
-		car, err := car.GetCar()
-		if err != nil {
-			glog.Error(err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
 
 		response, err := json.Marshal(car)
 		if err != nil {

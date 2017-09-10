@@ -60,25 +60,6 @@ const (
 	oneTimeUnit = time.Second / 4
 )
 
-func (car *Car) Drive() {
-	if car.Status == carSTOP {
-		go car.drive()
-	}
-	car.Status = carDRIVE
-}
-
-func (car *Car) Stop() {
-	car.Status = carSTOP
-}
-
-func GetCar() (*Car, error) {
-	if car == nil {
-		glog.Error("car not found")
-		return nil, fmt.Errorf("car not found")
-	}
-	return car, nil
-}
-
 func (car *Car) drive() {
 	for {
 		if car.Status == carSTOP {
@@ -267,7 +248,29 @@ func (car *Car) readObstacles() {
 	car.obstacles = car.track.Boundary.Sides
 }
 
-func New(track *track.Track) (*Car, error) {
+func (car *Car) Drive() {
+	if car.Status == carSTOP {
+		go car.drive()
+	}
+	car.Status = carDRIVE
+}
+
+func (car *Car) Stop() {
+	car.Status = carSTOP
+}
+
+func GetCar() (*Car, error) {
+	if car == nil {
+		InitCar()
+	}
+	return car, nil
+}
+
+func InitCar() (*Car, error) {
+	track, err := track.GetTrack()
+	if err != nil {
+		return nil, fmt.Errorf("unable to get track: %v", err)
+	}
 	if car == nil {
 		car = &Car{
 			track:  track,
