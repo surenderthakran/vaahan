@@ -78,7 +78,7 @@ func main() {
 	})
 
 	http.HandleFunc("/api/get_car", func(w http.ResponseWriter, r *http.Request) {
-		glog.Info("Request: /api/get_car")
+		// glog.Info("Request: /api/get_car")
 		car, err := car.GetCar()
 		if err != nil {
 			glog.Error(err)
@@ -139,6 +139,25 @@ func main() {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(response)
+	})
+
+	http.HandleFunc("/api/update_restart_conf", func(w http.ResponseWriter, r *http.Request) {
+		glog.Info("Request: /api/update_restart_conf")
+		restart := r.URL.Query()["restart"][0]
+		car, err := car.GetCar()
+		if err != nil {
+			glog.Error(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if restart == "1" {
+			car.RestartOnCollision = true
+		} else {
+			car.RestartOnCollision = false
+		}
+
+		w.Header().Set("Content-Type", "application/json")
 	})
 
 	http.Handle("/", http.StripPrefix("/", staticFs))

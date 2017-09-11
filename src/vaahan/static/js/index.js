@@ -15,6 +15,8 @@ let _car = {
   runUpdateLoop: false,
 };
 
+let restartOnCollision = false;
+
 document.addEventListener('DOMContentLoaded', function(){
   _map.canvas = document.getElementById('map');
   _car.canvas = document.getElementById('car');
@@ -35,6 +37,11 @@ function initCarControls() {
   document.getElementById('reset-car').addEventListener('click', (event) => {
     initCar();
     document.getElementById('start-pause').value = "Start Driving";
+  });
+
+  document.getElementById('restart').addEventListener('change', (event) => {
+    restartOnCollision = event.target.checked;
+    updateRestartConf(restartOnCollision);
   });
 }
 
@@ -65,14 +72,25 @@ function drawMap() {
 }
 
 function updateCar() {
+  restartOnCollision = _car.data.restartOnCollision;
+  document.getElementById('restart').checked = restartOnCollision;
+
   if (_car.data.status === "STOP") {
-    _car.runUpdateLoop = document.getElementById("restart").checked;
+    _car.runUpdateLoop = false;
     document.getElementById('start-pause').textContent = "Start Driving";
     document.getElementById('status').textContent = "Car has stopped.";
   } else if (_car.data.status === "DRIVE") {
     _car.runUpdateLoop = true;
     document.getElementById('start-pause').textContent = "Stop Driving";
     document.getElementById('status').textContent = "Car is driving.";
+  } else if (_car.data.status === "COLLISION") {
+    _car.runUpdateLoop = restartOnCollision;
+    if (restartOnCollision) {
+      document.getElementById('start-pause').textContent = "Stop Driving";
+    } else {
+      document.getElementById('start-pause').textContent = "Start Driving";
+    }
+    document.getElementById('status').textContent = "Car has collided.";
   }
 
   drawCar();

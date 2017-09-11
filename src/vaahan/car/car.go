@@ -13,13 +13,14 @@ import (
 )
 
 type Car struct {
-	vector    *geo.Ray
-	track     *track.Track
-	obstacles []*geo.LineSegment
-	specs     *CarSpecs
-	Sensors   []*sensor `json:"sensors"`
-	Points    Points    `json:"points"`
-	Status    CarStatus `json:"status"`
+	vector             *geo.Ray
+	track              *track.Track
+	obstacles          []*geo.LineSegment
+	specs              *CarSpecs
+	Sensors            []*sensor `json:"sensors"`
+	Points             Points    `json:"points"`
+	Status             CarStatus `json:"status"`
+	RestartOnCollision bool      `json:"restartOnCollision"`
 }
 
 type CarStatus string
@@ -51,9 +52,11 @@ type sensor struct {
 }
 
 var (
-	car      *Car
-	carSTOP  CarStatus = "STOP"
-	carDRIVE CarStatus = "DRIVE"
+	car          *Car
+	carSTOP      CarStatus = "STOP"
+	carDRIVE     CarStatus = "DRIVE"
+	carCOLLISION CarStatus = "COLLISION"
+	carSUCCESS   CarStatus = "SUCCESS"
 )
 
 const (
@@ -62,12 +65,22 @@ const (
 
 func (car *Car) drive() {
 	for {
+		glog.Info("===============================================================")
 		if car.Status == carSTOP {
 			glog.Info("stopping car")
 			break
+		} else if car.Status == carCOLLISION {
+			if car.RestartOnCollision {
+				glog.Info("restarting car")
+				time.Sleep(4 * oneTimeUnit)
+				InitCar()
+				car.Status = carDRIVE
+			} else {
+				car.Status = carSTOP
+			}
 		} else if car.Status == carDRIVE {
 			if car.collision() {
-				car.Status = carSTOP
+				car.Status = carCOLLISION
 			} else {
 				glog.Info("moving car")
 
@@ -75,10 +88,7 @@ func (car *Car) drive() {
 				car.moveForward()
 
 				// update car coordinates.
-				if err := car.updatePoints(); err != nil {
-					glog.Info(err)
-					car.Status = carSTOP
-				}
+				car.updatePoints()
 
 				// update sensors readings.
 				if err := car.updateSensors(); err != nil {
@@ -92,7 +102,6 @@ func (car *Car) drive() {
 }
 
 func (car *Car) moveForward() error {
-	glog.Info("inside car.moveForward()")
 	point := car.vector.FindPointAtDistance(car.specs.speed)
 	newCarVector, err := geo.NewRayByPointAndDirection(point, car.vector.Angle())
 	if err != nil {
@@ -103,20 +112,18 @@ func (car *Car) moveForward() error {
 }
 
 func (car *Car) turnRight() {
-	glog.Info("inside car.turnRight()")
 	car.vector.SetAngle(car.vector.Angle() - car.specs.turningAngle)
 	car.moveForward()
 }
 
 func (car *Car) turnLeft() {
-	glog.Info("inside car.turnLeft()")
 	car.vector.SetAngle(car.vector.Angle() + car.specs.turningAngle)
 	car.moveForward()
 }
 
 func (car *Car) collision() bool {
-	glog.Info("\ninside car.collision()")
-	// is currently colliding
+	glog.Info("inside car.collision()")
+	// check if the car is currently colliding.
 	if !car.insideTrack() {
 		return true
 	}
@@ -146,7 +153,7 @@ func (car *Car) insideTrack() bool {
 	return true
 }
 
-func (car *Car) updatePoints() error {
+func (car *Car) updatePoints() {
 	var alpha float64
 	if car.specs.internalAngle == 0 {
 		tan := car.specs.width / (2 * car.specs.length)
@@ -187,8 +194,6 @@ func (car *Car) updatePoints() error {
 
 	car.Points.FC = car.vector.FindPointAtDistance(car.specs.length)
 	car.Points.BC = car.vector.Start
-
-	return nil
 }
 
 func (car *Car) updateSensors() error {
@@ -267,11 +272,13 @@ func GetCar() (*Car, error) {
 }
 
 func InitCar() (*Car, error) {
+	glog.Info("inside car.InitCar()")
 	track, err := track.GetTrack()
 	if err != nil {
 		return nil, fmt.Errorf("unable to get track: %v", err)
 	}
 	if car == nil {
+		glog.Info("creating new car at starting vector")
 		car = &Car{
 			track:  track,
 			vector: track.StartVector,
@@ -284,18 +291,17 @@ func InitCar() (*Car, error) {
 			Status: carSTOP,
 		}
 	} else {
+		glog.Info("moving car to starting vector")
 		car.vector = track.StartVector
 		car.Status = carSTOP
 	}
 
-	if err := car.updatePoints(); err != nil {
-		return nil, fmt.Errorf("unable to start car: %v", err)
-	}
+	car.updatePoints()
+	car.readObstacles()
 
 	if err := car.updateSensors(); err != nil {
 		return nil, fmt.Errorf("unable to start car: %v", err)
 	}
-	car.readObstacles()
 
 	trainingSet := [][]float64{
 		[]float64{0.1, 0.2, 0.3},

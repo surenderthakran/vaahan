@@ -34,6 +34,35 @@ function getCurrentSimulation() {
   });
 }
 
+function updateRestartConf(restart) {
+  var myHeaders = new Headers();
+  var myRequest = new Request(
+    window.location.origin + '/api/update_restart_conf?restart=' + (restart?1:0),
+    {
+      method: 'GET',
+      headers: myHeaders,
+      mode: 'cors',
+      cache: 'default',
+    }
+  );
+
+  fetch(myRequest)
+  .then(function(response) {
+    console.log(response);
+    if(response.ok) {
+      return response;
+    } else {
+      throw Error(response.statusText);
+    }
+  })
+  .then(function(res) {
+    console.log(res);
+  })
+  .catch(function(err) {
+    console.error(err);
+  });
+}
+
 function getCar() {
   var myHeaders = new Headers();
   var myRequest = new Request(
