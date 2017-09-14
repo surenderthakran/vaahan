@@ -3,6 +3,7 @@ package car
 import (
 	"fmt"
 	"math"
+	"math/rand"
 	"time"
 
 	geo "vaahan/gogeo/2d"
@@ -315,9 +316,15 @@ func InitCar() (*Car, error) {
 		glog.Info(err)
 	}
 
-	for i := 0; i < 1; i++ {
-		nn.Train(trainingSet[0][0:2], trainingSet[0][2:])
+	fmt.Println("========================================================")
+	nn.State()
+	for i := 0; i < 10; i++ {
+		index := rand.Intn(len(trainingSet))
+		nn.Train(trainingSet[index][0:2], trainingSet[index][2:])
+		fmt.Println("Error: %f", nn.CalculateError(trainingSet[index][2:]))
+		// fmt.Println("========================================================")
 	}
+	nn.State()
 
 	return car, nil
 }

@@ -10,6 +10,10 @@ type NeuralNetwork struct {
 	outputLayer    *Layer
 }
 
+const (
+	LearningRate = 0.5
+)
+
 func NewNeuralNetwork(numberOfInputs, numberOfHiddenNeurons, numberOfOutputs int) (*NeuralNetwork, error) {
 	fmt.Println(fmt.Sprintf("numberOfInputs: %d", numberOfInputs))
 
@@ -33,34 +37,93 @@ func NewNeuralNetwork(numberOfInputs, numberOfHiddenNeurons, numberOfOutputs int
 }
 
 func (nn *NeuralNetwork) Train(trainingInput, trainingOutput []float64) {
-	fmt.Println("trainingInput: %v", trainingInput)
-	fmt.Println("trainingOutput: %v", trainingOutput)
-	output := nn.GetOutput(trainingInput)
-	fmt.Println("output: %v", output)
-	nn.UpdateOutputLayerWeight()
+	// fmt.Println("trainingInput: %v", trainingInput)
+	// fmt.Println("trainingOutput: %v", trainingOutput)
+	outputs := nn.CalculateOutput(trainingInput)
+	// fmt.Println("outputs: %v", outputs)
+	// fmt.Println("------------------------------------------------------------")
+	nn.UpdateOutputLayerWeight(outputs, trainingOutput)
+	// fmt.Println("------------------------------------------------------------")
 	nn.UpdateHiddenLayerWeight()
 }
 
-func (nn *NeuralNetwork) GetOutput(input []float64) []float64 {
-	hiddenOutput := nn.hiddenLayer.GetOutput(input)
-	return nn.outputLayer.GetOutput(hiddenOutput)
+func (nn *NeuralNetwork) CalculateOutput(input []float64) []float64 {
+	hiddenOutput := nn.hiddenLayer.CalculateOutput(input)
+	return nn.outputLayer.CalculateOutput(hiddenOutput)
 }
 
-func (nn *NeuralNetwork) UpdateOutputLayerWeight() {
-	fmt.Println("inside UpdateOutputLayerWeight()")
-	for _, neuron := range nn.outputLayer.neurons {
-		fmt.Println(neuron)
-		for _, weight := range neuron.weights {
-			fmt.Println(weight)
-			pdErrorWrtWeight := nn.getPartialDifferentialWithRespectToWeight()
-			fmt.Println(pdErrorWrtWeight)
+func (nn *NeuralNetwork) UpdateOutputLayerWeight(outputs, targetOutputs []float64) {
+	// fmt.Println("inside UpdateOutputLayerWeight()")
+	for neuronIndex, neuron := range nn.outputLayer.neurons {
+		// fmt.Println(neuron)
+
+		pdErrorWrtTotalNetInput := neuron.calculatePdErrorWrtTotalNetInput(targetOutputs[neuronIndex])
+		// fmt.Println("pdErrorWrtTotalNetInput: %v", pdErrorWrtTotalNetInput)
+
+		for weightIndex, weight := range neuron.weights {
+			// fmt.Println("\nweight: %v", weight)
+
+			pdTotalNetInputWrtWeight := neuron.calculatePdTotalNetInputWrtWeight(weightIndex)
+			// fmt.Println("pdTotalNetInputWrtWeight: %v", pdTotalNetInputWrtWeight)
+
+			pdErrorWrtWeight := pdErrorWrtTotalNetInput * pdTotalNetInputWrtWeight
+			// fmt.Println("pdErrorWrtWeight: %v", pdErrorWrtWeight)
+
+			weight -= LearningRate * pdErrorWrtWeight
+			// fmt.Println("NewWeight: %v", weight)
+
+			neuron.weights[weightIndex] = weight
 		}
 	}
 }
 
 func (nn *NeuralNetwork) UpdateHiddenLayerWeight() {
+	// fmt.Println("inside UpdateHiddenLayerWeight()")
+	for neuronIndex, neuron := range nn.hiddenLayer.neurons {
+		// fmt.Println(neuron)
+
+		dErrorWrtOutput := float64(0)
+		for _, outputNeuron := range nn.outputLayer.neurons {
+			dErrorWrtOutput += outputNeuron.pdErrorWrtTotalNetInput * outputNeuron.weights[neuronIndex]
+		}
+
+		pdTotalNetInputWrtInput := neuron.calculatePdTotalNetInputWrtInput()
+
+		pdErrorWrtTotalNetInput := dErrorWrtOutput * pdTotalNetInputWrtInput
+		// fmt.Println("pdErrorWrtTotalNetInput: %v", pdErrorWrtTotalNetInput)
+
+		for weightIndex, weight := range neuron.weights {
+			// fmt.Println("\nweight: %v", weight)
+
+			pdTotalNetInputWrtWeight := neuron.calculatePdTotalNetInputWrtWeight(weightIndex)
+			// fmt.Println("pdTotalNetInputWrtWeight: %v", pdTotalNetInputWrtWeight)
+
+			pdErrorWrtWeight := pdErrorWrtTotalNetInput * pdTotalNetInputWrtWeight
+			// fmt.Println("pdErrorWrtWeight: %v", pdErrorWrtWeight)
+
+			weight -= LearningRate * pdErrorWrtWeight
+			// fmt.Println("NewWeight: %v", weight)
+
+			neuron.weights[weightIndex] = weight
+		}
+	}
 }
 
-func (nn *NeuralNetwork) getPartialDifferentialWithRespectToWeight() float64 {
-	return 0
+func (nn *NeuralNetwork) CalculateError(targetOutput []float64) float64 {
+	error := float64(0)
+	for index, neuron := range nn.outputLayer.neurons {
+		error += neuron.CalculateError(targetOutput[index])
+	}
+	return error
+}
+
+func (nn *NeuralNetwork) State() {
+	fmt.Println("Hidden Neurons")
+	for _, hiddenNeuron := range nn.hiddenLayer.neurons {
+		fmt.Println(hiddenNeuron)
+	}
+	fmt.Println("Output Neurons")
+	for _, outputNeuron := range nn.outputLayer.neurons {
+		fmt.Println(outputNeuron)
+	}
 }

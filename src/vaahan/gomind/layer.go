@@ -32,10 +32,10 @@ func NewLayer(numberOfNeurons, numberOfNeuronsInPreviousLayer int) (*Layer, erro
 	}, nil
 }
 
-func (layer *Layer) GetOutput(input []float64) []float64 {
+func (layer *Layer) CalculateOutput(input []float64) []float64 {
 	var output []float64
 	for _, neuron := range layer.neurons {
-		output = append(output, neuron.GetOutput(input))
+		output = append(output, neuron.CalculateOutput(input))
 	}
 	return output
 }
