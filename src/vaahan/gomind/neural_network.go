@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// Type NeuralNetwork to describe a single hidden layer MLP feed forward neural network.
+// NeuralNetwork describes a single hidden layer MLP feed forward neural network.
 type NeuralNetwork struct {
 	numberOfInputs int
 	hiddenLayer    *layer
