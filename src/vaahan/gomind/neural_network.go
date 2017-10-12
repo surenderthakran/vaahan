@@ -44,9 +44,9 @@ func (network *NeuralNetwork) Train(trainingInput, trainingOutput []float64) {
 	outputs := network.CalculateOutput(trainingInput)
 	// fmt.Println("outputs: %v", outputs)
 	// fmt.Println("------------------------------------------------------------")
-	network.UpdateOutputLayerWeight(outputs, trainingOutput)
+	network.updateOutputLayerWeight(outputs, trainingOutput)
 	// fmt.Println("------------------------------------------------------------")
-	network.UpdateHiddenLayerWeight()
+	network.updateHiddenLayerWeight()
 }
 
 // CalculateOutput function returns the output array from the neural network for the given
@@ -65,14 +65,14 @@ func (network *NeuralNetwork) GetLastOutput() []float64 {
 	return output
 }
 
-// UpdateOutputLayerWeight function updates the weights from the hidden layer to the output layer,
+// updateOutputLayerWeight function updates the weights from the hidden layer to the output layer,
 // after calculating how much each weight affects the total error in the final output of the network.
 // i.e. the partial differential of error with respect to the weight. ∂Error/∂Weight.
 //
 // By applying the chain rule, https://en.wikipedia.org/wiki/Chain_rule
 // ∂TotalError/∂OutputNeuronWeight = ∂TotalError/∂TotalNetInputToOutputNeuron * ∂TotalNetInputToOutputNeuron/∂OutputNeuronWeight
-func (network *NeuralNetwork) UpdateOutputLayerWeight(outputs, targetOutputs []float64) {
-	fmt.Println("inside UpdateOutputLayerWeight()")
+func (network *NeuralNetwork) updateOutputLayerWeight(outputs, targetOutputs []float64) {
+	// fmt.Println("inside updateOutputLayerWeight()")
 	for neuronIndex, neuron := range network.outputLayer.neurons {
 		// fmt.Println(neuronIndex)
 		// fmt.Println(neuron)
@@ -113,14 +113,14 @@ func (network *NeuralNetwork) UpdateOutputLayerWeight(outputs, targetOutputs []f
 	}
 }
 
-// UpdateHiddenLayerWeight function updates the weights from the input layer to the hidden layer,
+// updateHiddenLayerWeight function updates the weights from the input layer to the hidden layer,
 // after calculating how much each weight affects the error in the final output of the network.
 // i.e. the partial differential of error with respect to the weight. ∂Error/∂Weight.
 //
 // By applying the chain rule, https://en.wikipedia.org/wiki/Chain_rule
 // ∂TotalError/∂HiddenNeuronWeight = ∂TotalError/∂HiddenNeuronOutput * ∂HiddenNeuronOutput/∂TotalNetInputToHiddenNeuron * ∂TotalNetInputToHiddenNeuron/∂HiddenNeuronWeight
-func (network *NeuralNetwork) UpdateHiddenLayerWeight() {
-	fmt.Println("inside UpdateHiddenLayerWeight()")
+func (network *NeuralNetwork) updateHiddenLayerWeight() {
+	// fmt.Println("inside updateHiddenLayerWeight()")
 
 	// First we calculate the derivative of total error with respect to the output of each hidden neuron.
 	// i.e. ∂TotalError/∂HiddenNeuronOutput.
