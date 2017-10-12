@@ -53,7 +53,7 @@ func (neuron *Neuron) calculateTotalNetInput(input []float64) float64 {
 	return netInput
 }
 
-// squash function applies the sigmoid activation function on the total net input of a neuron to generate its output.
+// squash function applies the non-linear sigmoid activation function on the total net input of a neuron to generate its output.
 // f(x) = 1 * (1 + (e ^ -x))
 func (neuron *Neuron) squash(input float64) float64 {
 	// to avoid floating-point overflow in the exponential function, we use the

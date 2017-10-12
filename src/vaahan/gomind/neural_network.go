@@ -1,3 +1,4 @@
+// Package gomind for a simple Multi Layer Perceptron (MLP) Feed Forward Artificial Neural Network library.
 package gomind
 
 import (
@@ -36,6 +37,7 @@ func NewNeuralNetwork(numberOfInputs, numberOfHiddenNeurons, numberOfOutputs int
 	}, nil
 }
 
+// Train function trains the neural network using the given set of inputs and outputs.
 func (network *NeuralNetwork) Train(trainingInput, trainingOutput []float64) {
 	// fmt.Println("trainingInput: %v", trainingInput)
 	// fmt.Println("trainingOutput: %v", trainingOutput)
@@ -54,10 +56,10 @@ func (network *NeuralNetwork) CalculateOutput(input []float64) []float64 {
 	return network.outputLayer.calculateOutput(hiddenOutput)
 }
 
+// GetLastOutput function returns the array of last output computed by the network.
 func (network *NeuralNetwork) GetLastOutput() []float64 {
 	var output []float64
 	for _, neuron := range network.outputLayer.neurons {
-		// error += neuron.CalculateError(targetOutput[index])
 		output = append(output, neuron.output)
 	}
 	return output
@@ -171,6 +173,7 @@ func (network *NeuralNetwork) UpdateHiddenLayerWeight() {
 	}
 }
 
+// CalculateTotalError computes and returns the total error for the given training set.
 func (network *NeuralNetwork) CalculateTotalError(trainingSet [][][]float64) float64 {
 	totalError := float64(0)
 	for _, set := range trainingSet {
@@ -181,6 +184,7 @@ func (network *NeuralNetwork) CalculateTotalError(trainingSet [][][]float64) flo
 	return totalError
 }
 
+// CalculateError function generates the error value for the given target output against the network's last output.
 func (network *NeuralNetwork) CalculateError(targetOutput []float64) float64 {
 	error := float64(0)
 	for index, neuron := range network.outputLayer.neurons {
@@ -189,6 +193,7 @@ func (network *NeuralNetwork) CalculateError(targetOutput []float64) float64 {
 	return error
 }
 
+// Describe function prints the current state of the neural network and its components.
 func (network *NeuralNetwork) Describe() {
 	fmt.Println("Hidden Layer:")
 	network.hiddenLayer.describe()
