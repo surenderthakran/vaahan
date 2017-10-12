@@ -304,27 +304,55 @@ func InitCar() (*Car, error) {
 		return nil, fmt.Errorf("unable to start car: %v", err)
 	}
 
-	trainingSet := [][]float64{
-		[]float64{0.1, 0.2, 0.3},
-		[]float64{0.2, 0.3, 0.5},
-		[]float64{0.3, 0.4, 0.7},
-		[]float64{0.4, 0.5, 0.9},
+	// trainingSet := [][][]float64{
+	// 	[][]float64{[]float64{0.1, 0.2}, []float64{0.3}},
+	// 	[][]float64{[]float64{0.2, 0.3}, []float64{0.5}},
+	// 	[][]float64{[]float64{0.3, 0.4}, []float64{0.7}},
+	// 	[][]float64{[]float64{0.4, 0.5}, []float64{0.9}},
+	// 	[][]float64{[]float64{0.5, 0.1}, []float64{0.6}},
+	// 	[][]float64{[]float64{0.6, 0.2}, []float64{0.8}},
+	// 	[][]float64{[]float64{0.7, 0.2}, []float64{0.9}},
+	// }
+
+	// trainingSet := [][][]float64{
+	// 	[][]float64{[]float64{0.1, 0.2, 0.3}, []float64{0.32}},
+	// 	[][]float64{[]float64{0.2, 0.3, 0.4}, []float64{0.46}},
+	// 	[][]float64{[]float64{0.3, 0.4, 0.5}, []float64{0.62}},
+	// 	[][]float64{[]float64{0.4, 0.5, 0.6}, []float64{0.8}},
+	// 	[][]float64{[]float64{0.5, 0.1, 0.2}, []float64{0.25}},
+	// 	[][]float64{[]float64{0.6, 0.2, 0.3}, []float64{0.42}},
+	// 	[][]float64{[]float64{0.7, 0.2, 0.3}, []float64{0.44}},
+	// 	[][]float64{[]float64{0.8, 0.3, 0.4}, []float64{0.64}},
+	// 	[][]float64{[]float64{0.9, 0.4, 0.5}, []float64{0.86}},
+	// 	[][]float64{[]float64{0.8, 0.5, 0.1}, []float64{0.5}},
+	// 	[][]float64{[]float64{0.7, 0.6, 0.2}, []float64{0.62}},
+	// 	[][]float64{[]float64{0.6, 0.2, 0.5}, []float64{0.62}},
+	// }
+
+	trainingSet := [][][]float64{
+		[][]float64{[]float64{0.05, 0.10}, []float64{0.01, 0.99}},
 	}
 
-	nn, err := gomind.NewNeuralNetwork(2, 3, 1)
+	nn, err := gomind.NewNeuralNetwork(len(trainingSet[0][0]), 2, len(trainingSet[0][1]))
 	if err != nil {
 		glog.Info(err)
 	}
 
+	nn.Describe()
 	fmt.Println("========================================================")
-	nn.State()
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 1; i++ {
+		fmt.Println(i)
 		index := rand.Intn(len(trainingSet))
-		nn.Train(trainingSet[index][0:2], trainingSet[index][2:])
-		fmt.Println("Error: %f", nn.CalculateError(trainingSet[index][2:]))
-		// fmt.Println("========================================================")
+
+		fmt.Println(fmt.Sprintf("%v %v", trainingSet[index][0], trainingSet[index][1]))
+		nn.Train(trainingSet[index][0], trainingSet[index][1])
+
+		fmt.Println(nn.GetLastOutput())
+		fmt.Println(fmt.Sprintf("Error: %v\n", nn.CalculateError(trainingSet[index][1])))
 	}
-	nn.State()
+	fmt.Println(fmt.Sprintf("\nTotal Error: %v", nn.CalculateTotalError(trainingSet)))
+	fmt.Println("========================================================")
+	nn.Describe()
 
 	return car, nil
 }

@@ -9,7 +9,7 @@ type Layer struct {
 	neurons []*Neuron
 }
 
-func NewLayer(numberOfNeurons, numberOfNeuronsInPreviousLayer int) (*Layer, error) {
+func newLayer(numberOfNeurons, numberOfNeuronsInPreviousLayer int) (*Layer, error) {
 	if numberOfNeurons <= 0 {
 		return nil, fmt.Errorf("%d is not a valid number of neurons", numberOfNeurons)
 	}
@@ -20,8 +20,8 @@ func NewLayer(numberOfNeurons, numberOfNeuronsInPreviousLayer int) (*Layer, erro
 		for i := 0; i < numberOfNeuronsInPreviousLayer; i++ {
 			weights = append(weights, rand.Float64())
 		}
-		fmt.Println(fmt.Sprintf("weights: %d", weights))
-		neuron, err := NewNeuron(weights)
+		fmt.Println(fmt.Sprintf("weights: %v", weights))
+		neuron, err := newNeuron(weights)
 		if err != nil {
 			return nil, fmt.Errorf("error creating a neuron: %v", err)
 		}
@@ -32,10 +32,19 @@ func NewLayer(numberOfNeurons, numberOfNeuronsInPreviousLayer int) (*Layer, erro
 	}, nil
 }
 
-func (layer *Layer) CalculateOutput(input []float64) []float64 {
+// calculateOutput function returns the output array from a layer of neurons for an
+// array of input for the current set of weights of its neurons.
+func (layer *Layer) calculateOutput(input []float64) []float64 {
 	var output []float64
 	for _, neuron := range layer.neurons {
-		output = append(output, neuron.CalculateOutput(input))
+		output = append(output, neuron.calculateOutput(input))
 	}
 	return output
+}
+
+func (layer *Layer) describe() {
+	fmt.Println("Neurons:")
+	for _, neuron := range layer.neurons {
+		fmt.Println(neuron)
+	}
 }
