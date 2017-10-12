@@ -5,16 +5,18 @@ import (
 	"fmt"
 )
 
+// Type NeuralNetwork to describe a single hidden layer MLP feed forward neural network.
 type NeuralNetwork struct {
 	numberOfInputs int
-	hiddenLayer    *Layer
-	outputLayer    *Layer
+	hiddenLayer    *layer
+	outputLayer    *layer
 }
 
 const (
 	learningRate = 0.5
 )
 
+// NewNeuralNetwork function returns a new NeuralNetwork object.
 func NewNeuralNetwork(numberOfInputs, numberOfHiddenNeurons, numberOfOutputs int) (*NeuralNetwork, error) {
 	fmt.Println(fmt.Sprintf("numberOfInputs: %d", numberOfInputs))
 

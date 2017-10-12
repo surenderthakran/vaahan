@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-type Neuron struct {
+type neuron struct {
 	inputs   []float64
 	weights  []float64
 	netInput float64
@@ -15,29 +15,29 @@ type Neuron struct {
 	pdErrorWrtTotalNetInputOfOutputNeuron float64
 }
 
-func (neuron *Neuron) String() string {
+func (n *neuron) String() string {
 	return fmt.Sprintf(`Neuron {
 	inputs: %v,
 	weights: %v,
 	netInput: %v,
 	output: %v
-}`, neuron.inputs, neuron.weights, neuron.netInput, neuron.output)
+}`, n.inputs, n.weights, n.netInput, n.output)
 }
 
-func newNeuron(weights []float64) (*Neuron, error) {
+func newNeuron(weights []float64) (*neuron, error) {
 	if len(weights) == 0 {
 		return nil, fmt.Errorf("unable to create neuron without any weights")
 	}
-	return &Neuron{
+	return &neuron{
 		weights: weights,
 	}, nil
 }
 
-func (neuron *Neuron) calculateOutput(inputs []float64) float64 {
-	neuron.inputs = inputs
-	neuron.netInput = neuron.calculateTotalNetInput(neuron.inputs)
-	neuron.output = neuron.squash(neuron.netInput)
-	return neuron.output
+func (n *neuron) calculateOutput(inputs []float64) float64 {
+	n.inputs = inputs
+	n.netInput = n.calculateTotalNetInput(n.inputs)
+	n.output = squash(n.netInput)
+	return n.output
 }
 
 // calculateTotalNetInput function returns the final input to a neuron for an array of
@@ -45,17 +45,17 @@ func (neuron *Neuron) calculateOutput(inputs []float64) float64 {
 //
 // The total net input of a neuron is a weighted summation of all the inputs and their respective weights to the neuron.
 // Total Net Input = (n Σ ᵢ = 1) (inputᵢ * weightᵢ)
-func (neuron *Neuron) calculateTotalNetInput(input []float64) float64 {
+func (n *neuron) calculateTotalNetInput(input []float64) float64 {
 	netInput := float64(0)
 	for i := range input {
-		netInput += input[i] * neuron.weights[i]
+		netInput += input[i] * n.weights[i]
 	}
 	return netInput
 }
 
 // squash function applies the non-linear sigmoid activation function on the total net input of a neuron to generate its output.
 // f(x) = 1 * (1 + (e ^ -x))
-func (neuron *Neuron) squash(input float64) float64 {
+func squash(input float64) float64 {
 	// to avoid floating-point overflow in the exponential function, we use the
 	// constant 45 as limiting value on the extremes.
 	if input < -45 {
@@ -73,11 +73,11 @@ func (neuron *Neuron) squash(input float64) float64 {
 //
 // By applying the chain rule, https://en.wikipedia.org/wiki/Chain_rule
 // ∂Error/∂Input = ∂Error/∂Output * ∂Output/∂Input
-func (neuron *Neuron) calculatePdErrorWrtTotalNetInputOfOutputNeuron(targetOutput float64) float64 {
-	pdErrorWrtOutput := neuron.calculatePdErrorWrtOutput(targetOutput)
-	dOutputWrtTotalNetInput := neuron.calculateDerivativeOutputWrtTotalNetInput()
-	neuron.pdErrorWrtTotalNetInputOfOutputNeuron = pdErrorWrtOutput * dOutputWrtTotalNetInput
-	return neuron.pdErrorWrtTotalNetInputOfOutputNeuron
+func (n *neuron) calculatePdErrorWrtTotalNetInputOfOutputNeuron(targetOutput float64) float64 {
+	pdErrorWrtOutput := n.calculatePdErrorWrtOutput(targetOutput)
+	dOutputWrtTotalNetInput := n.calculateDerivativeOutputWrtTotalNetInput()
+	n.pdErrorWrtTotalNetInputOfOutputNeuron = pdErrorWrtOutput * dOutputWrtTotalNetInput
+	return n.pdErrorWrtTotalNetInputOfOutputNeuron
 }
 
 // calculatePdErrorWrtOutput function is only for output layer neurons.
@@ -95,8 +95,8 @@ func (neuron *Neuron) calculatePdErrorWrtTotalNetInputOfOutputNeuron(targetOutpu
 // 								= 1/2 * 2 * ((Target - Actual) ^ (2 - 1)) * -1
 // 								= - (Target - Actual)
 // 								= Actual - Target
-func (neuron *Neuron) calculatePdErrorWrtOutput(targetOutput float64) float64 {
-	return neuron.output - targetOutput
+func (n *neuron) calculatePdErrorWrtOutput(targetOutput float64) float64 {
+	return n.output - targetOutput
 }
 
 // calculateDerivativeOutputWrtTotalNetInput function is used by both hidden and output layer neurons.
@@ -108,8 +108,8 @@ func (neuron *Neuron) calculatePdErrorWrtOutput(targetOutput float64) float64 {
 // dOutput/dInput = d(1.0 / (1.0 + (e ^ -Input)))/dInput
 // According to, https://en.wikipedia.org/wiki/Logistic_function#Derivative
 // dOutput/dInput = Output * (1 - Output)
-func (neuron *Neuron) calculateDerivativeOutputWrtTotalNetInput() float64 {
-	return neuron.output * (1 - neuron.output)
+func (n *neuron) calculateDerivativeOutputWrtTotalNetInput() float64 {
+	return n.output * (1 - n.output)
 }
 
 // calculatePdTotalNetInputWrtWeight function is used by both hidden and output layer neurons.
@@ -121,10 +121,10 @@ func (neuron *Neuron) calculateDerivativeOutputWrtTotalNetInput() float64 {
 //
 // The partial derivative of the total net input with respect to the weight is the input for that particular weight
 // since all the weighted sums are threated as constants.
-func (neuron *Neuron) calculatePdTotalNetInputWrtWeight(index int) float64 {
-	return neuron.inputs[index]
+func (n *neuron) calculatePdTotalNetInputWrtWeight(index int) float64 {
+	return n.inputs[index]
 }
 
-func (neuron *Neuron) calculateError(targetOutput float64) float64 {
-	return 0.5 * math.Pow(targetOutput-neuron.output, 2)
+func (n *neuron) calculateError(targetOutput float64) float64 {
+	return 0.5 * math.Pow(targetOutput-n.output, 2)
 }
