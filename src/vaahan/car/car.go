@@ -333,26 +333,42 @@ func InitCar() (*Car, error) {
 		[][]float64{[]float64{0.05, 0.10}, []float64{0.01, 0.99}},
 	}
 
-	nn, err := gomind.NewNeuralNetwork(len(trainingSet[0][0]), 2, len(trainingSet[0][1]))
+	// trainingSet := [][][]float64{
+	// 	[][]float64{[]float64{0.01}, []float64{0.02}},
+	// 	[][]float64{[]float64{0.02}, []float64{0.04}},
+	// 	[][]float64{[]float64{0.04}, []float64{0.08}},
+	// 	[][]float64{[]float64{0.05}, []float64{0.10}},
+	// 	[][]float64{[]float64{0.07}, []float64{0.14}},
+	// 	[][]float64{[]float64{0.08}, []float64{0.16}},
+	// 	[][]float64{[]float64{0.10}, []float64{0.20}},
+	// 	[][]float64{[]float64{0.11}, []float64{0.22}},
+	// 	[][]float64{[]float64{0.13}, []float64{0.26}},
+	// 	[][]float64{[]float64{0.14}, []float64{0.28}},
+	// 	[][]float64{[]float64{0.16}, []float64{0.32}},
+	// 	[][]float64{[]float64{0.17}, []float64{0.34}},
+	// }
+
+	mind, err := gomind.NewNeuralNetwork(len(trainingSet[0][0]), 2, len(trainingSet[0][1]))
 	if err != nil {
 		glog.Info(err)
 	}
 
-	nn.Describe()
+	mind.Describe()
 	fmt.Println("========================================================")
 	for i := 0; i < 1; i++ {
 		fmt.Println(i)
 		index := rand.Intn(len(trainingSet))
 
 		fmt.Println(fmt.Sprintf("%v %v", trainingSet[index][0], trainingSet[index][1]))
-		nn.Train(trainingSet[index][0], trainingSet[index][1])
+		mind.Train(trainingSet[index][0], trainingSet[index][1])
 
-		fmt.Println(nn.GetLastOutput())
-		fmt.Println(fmt.Sprintf("Error: %v\n", nn.CalculateError(trainingSet[index][1])))
+		fmt.Println(mind.LastOutput())
+		fmt.Println(fmt.Sprintf("Error: %v\n", mind.CalculateError(trainingSet[index][1])))
 	}
-	fmt.Println(fmt.Sprintf("\nTotal Error: %v", nn.CalculateTotalError(trainingSet)))
+	fmt.Println(fmt.Sprintf("\nTotal Error: %v", mind.CalculateTotalError(trainingSet)))
 	fmt.Println("========================================================")
-	nn.Describe()
+	mind.Describe()
+	fmt.Println(mind.CalculateOutput([]float64{0.15}))
 
 	return car, nil
 }

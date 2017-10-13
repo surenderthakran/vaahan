@@ -25,6 +25,7 @@ func newLayer(numberOfNeurons, numberOfNeuronsInPreviousLayer int) (*layer, erro
 		if err != nil {
 			return nil, fmt.Errorf("error creating a neuron: %v", err)
 		}
+		neuron.bias = rand.Float64()
 		neurons = append(neurons, neuron)
 	}
 	return &layer{

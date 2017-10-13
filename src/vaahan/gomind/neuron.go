@@ -8,6 +8,7 @@ import (
 type neuron struct {
 	inputs   []float64
 	weights  []float64
+	bias     float64
 	netInput float64
 	output   float64
 	// Holds the partial derivative of error with respect to the total net input.
@@ -19,9 +20,10 @@ func (n *neuron) String() string {
 	return fmt.Sprintf(`Neuron {
 	inputs: %v,
 	weights: %v,
+	bias: %v,
 	netInput: %v,
 	output: %v
-}`, n.inputs, n.weights, n.netInput, n.output)
+}`, n.inputs, n.weights, n.bias, n.netInput, n.output)
 }
 
 func newNeuron(weights []float64) (*neuron, error) {
@@ -50,7 +52,7 @@ func (n *neuron) calculateTotalNetInput(input []float64) float64 {
 	for i := range input {
 		netInput += input[i] * n.weights[i]
 	}
-	return netInput
+	return netInput + n.bias
 }
 
 // squash function applies the non-linear sigmoid activation function on the total net input of a neuron to generate its output.

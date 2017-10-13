@@ -58,8 +58,8 @@ func (network *NeuralNetwork) CalculateOutput(input []float64) []float64 {
 	return network.outputLayer.calculateOutput(hiddenOutput)
 }
 
-// GetLastOutput function returns the array of last output computed by the network.
-func (network *NeuralNetwork) GetLastOutput() []float64 {
+// LastOutput function returns the array of last output computed by the network.
+func (network *NeuralNetwork) LastOutput() []float64 {
 	var output []float64
 	for _, neuron := range network.outputLayer.neurons {
 		output = append(output, neuron.output)
