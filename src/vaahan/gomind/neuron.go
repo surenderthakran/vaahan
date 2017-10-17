@@ -45,8 +45,8 @@ func (n *neuron) calculateOutput(inputs []float64) float64 {
 // calculateTotalNetInput function returns the final input to a neuron for an array of
 // inputs based on its current set of weights.
 //
-// The total net input of a neuron is a weighted summation of all the inputs and their respective weights to the neuron.
-// Total Net Input = (n Σ ᵢ = 1) (inputᵢ * weightᵢ)
+// The total net input of a neuron is a weighted summation of all the inputs and their respective weights to the neuron plus the bias of the neuron.
+// Total Net Input = (n Σ ᵢ = 1) ((inputᵢ * weightᵢ) + biasᵢ)
 func (n *neuron) calculateTotalNetInput(input []float64) float64 {
 	netInput := float64(0)
 	for i := range input {
@@ -118,11 +118,11 @@ func (n *neuron) calculateDerivativeOutputWrtTotalNetInput() float64 {
 // It returns the partial derivative of total net input to a neuron with respect to one of its weight
 // i.e. ∂TotalNetInput/∂Weight.
 //
-// The total net input of a neuron is a weighted summation of all the inputs and their respective weights to the neuron.
-// Total Net Input = (n Σ ᵢ = 1) (inputᵢ * weightᵢ)
+// The total net input of a neuron is a weighted summation of all the inputs and their respective weights to the neuron plus the bias of the neuron.
+// Total Net Input = (n Σ ᵢ = 1) ((inputᵢ * weightᵢ) + biasᵢ)
 //
 // The partial derivative of the total net input with respect to the weight is the input for that particular weight
-// since all the weighted sums are threated as constants.
+// since all the weighted sums and the bias are treated as constants.
 func (n *neuron) calculatePdTotalNetInputWrtWeight(index int) float64 {
 	return n.inputs[index]
 }

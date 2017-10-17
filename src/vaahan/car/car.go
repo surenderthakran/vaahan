@@ -304,15 +304,15 @@ func InitCar() (*Car, error) {
 		return nil, fmt.Errorf("unable to start car: %v", err)
 	}
 
-	// trainingSet := [][][]float64{
-	// 	[][]float64{[]float64{0.1, 0.2}, []float64{0.3}},
-	// 	[][]float64{[]float64{0.2, 0.3}, []float64{0.5}},
-	// 	[][]float64{[]float64{0.3, 0.4}, []float64{0.7}},
-	// 	[][]float64{[]float64{0.4, 0.5}, []float64{0.9}},
-	// 	[][]float64{[]float64{0.5, 0.1}, []float64{0.6}},
-	// 	[][]float64{[]float64{0.6, 0.2}, []float64{0.8}},
-	// 	[][]float64{[]float64{0.7, 0.2}, []float64{0.9}},
-	// }
+	trainingSet := [][][]float64{
+		[][]float64{[]float64{0.1, 0.2}, []float64{0.3}},
+		[][]float64{[]float64{0.2, 0.3}, []float64{0.5}},
+		[][]float64{[]float64{0.3, 0.4}, []float64{0.7}},
+		[][]float64{[]float64{0.4, 0.5}, []float64{0.9}},
+		[][]float64{[]float64{0.5, 0.1}, []float64{0.6}},
+		[][]float64{[]float64{0.6, 0.2}, []float64{0.8}},
+		[][]float64{[]float64{0.7, 0.2}, []float64{0.9}},
+	}
 
 	// trainingSet := [][][]float64{
 	// 	[][]float64{[]float64{0.1, 0.2, 0.3}, []float64{0.32}},
@@ -329,9 +329,9 @@ func InitCar() (*Car, error) {
 	// 	[][]float64{[]float64{0.6, 0.2, 0.5}, []float64{0.62}},
 	// }
 
-	trainingSet := [][][]float64{
-		[][]float64{[]float64{0.05, 0.10}, []float64{0.01, 0.99}},
-	}
+	// trainingSet := [][][]float64{
+	// 	[][]float64{[]float64{0.05, 0.10}, []float64{0.01, 0.99}},
+	// }
 
 	// trainingSet := [][][]float64{
 	// 	[][]float64{[]float64{0.01}, []float64{0.02}},
@@ -348,14 +348,14 @@ func InitCar() (*Car, error) {
 	// 	[][]float64{[]float64{0.17}, []float64{0.34}},
 	// }
 
-	mind, err := gomind.NewNeuralNetwork(len(trainingSet[0][0]), 2, len(trainingSet[0][1]))
+	mind, err := gomind.NewNeuralNetwork(len(trainingSet[0][0]), 3, len(trainingSet[0][1]))
 	if err != nil {
 		glog.Info(err)
 	}
 
 	mind.Describe()
 	fmt.Println("========================================================")
-	for i := 0; i < 1; i++ {
+	for i := 0; i < 100000; i++ {
 		fmt.Println(i)
 		index := rand.Intn(len(trainingSet))
 
