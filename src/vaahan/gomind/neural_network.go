@@ -92,7 +92,7 @@ func (network *NeuralNetwork) updateOutputLayerWeight(outputs, targetOutputs []f
 		pdErrorWrtTotalNetInputOfOutputNeuron := neuron.calculatePdErrorWrtTotalNetInputOfOutputNeuron(targetOutputs[neuronIndex])
 		// fmt.Println("pdErrorWrtTotalNetInputOfOutputNeuron: %v", pdErrorWrtTotalNetInputOfOutputNeuron)
 
-		for weightIndex, _ := range neuron.weights {
+		for weightIndex, weight := range neuron.weights {
 			// fmt.Println("\nweight: %v", weight)
 
 			// For each weight of the neuron we calculate the partial derivative of
@@ -105,15 +105,14 @@ func (network *NeuralNetwork) updateOutputLayerWeight(outputs, targetOutputs []f
 			pdErrorWrtWeight := pdErrorWrtTotalNetInputOfOutputNeuron * pdTotalNetInputWrtWeight
 			// fmt.Println("pdErrorWrtWeight: %v", pdErrorWrtWeight)
 
-			var newWeight float64
 			// Now that we know how much the output neuron's weight affects the error in the output, we adjust the weight
 			// by subtracting the affect from the current weight after multiplying it with the learning rate.
 			// The learning rate is a constant value chosen for a network to control the correction in
 			// a network's weight based on a sample.
-			newWeight -= learningRate * pdErrorWrtWeight
+			weight -= learningRate * pdErrorWrtWeight
 			// fmt.Println("NewWeight: %v", newWeight)
 
-			neuron.weights[weightIndex] = newWeight
+			neuron.weights[weightIndex] = weight
 		}
 
 		// By applying the chain rule, we can define the partial differential of total error with respect to the bias to the output neuron as:
@@ -126,14 +125,11 @@ func (network *NeuralNetwork) updateOutputLayerWeight(outputs, targetOutputs []f
 		// ∂TotalError/∂OutputNeuronBias = ∂TotalError/∂TotalNetInputToOutputNeuron
 		pdErrorWrtBias := pdErrorWrtTotalNetInputOfOutputNeuron
 
-		var newBias float64
 		// Now that we know how much the output neuron's bias affects the error in the output, we adjust the bias
 		// by subtracting the affect from the current bias after multiplying it with the learning rate.
 		// The learning rate is a constant value chosen for a network to control the correction in
 		// a network's bias based on a sample.
-		newBias -= learningRate * pdErrorWrtBias
-
-		neuron.bias = newBias
+		neuron.bias -= learningRate * pdErrorWrtBias
 	}
 }
 
@@ -174,7 +170,7 @@ func (network *NeuralNetwork) updateHiddenLayerWeight() {
 		pdErrorWrtTotalNetInputOfHiddenNeuron := dErrorWrtOutputOfHiddenNeuron * dHiddenNeuronOutputWrtTotalNetInputToHiddenNeuron
 		// fmt.Println("pdErrorWrtTotalNetInput: %v", pdErrorWrtTotalNetInput)
 
-		for weightIndex, _ := range neuron.weights {
+		for weightIndex, weight := range neuron.weights {
 			// fmt.Println("\nweight: %v", weight)
 
 			// For each weight of the neuron we calculate the partial derivative of
@@ -187,15 +183,14 @@ func (network *NeuralNetwork) updateHiddenLayerWeight() {
 			pdErrorWrtWeight := pdErrorWrtTotalNetInputOfHiddenNeuron * pdTotalNetInputWrtWeight
 			// fmt.Println("pdErrorWrtWeight: %v", pdErrorWrtWeight)
 
-			var newWeight float64
 			// Now that we know how much the hidden neuron's weight affects the error in the output, we adjust the weight
 			// by subtracting the affect from the current weight after multiplying it with the learning rate.
 			// The learning rate is a constant value chosen for a network to control the correction in
 			// a network's weight based on a sample.
-			newWeight -= learningRate * pdErrorWrtWeight
+			weight -= learningRate * pdErrorWrtWeight
 			// fmt.Println("NewWeight: %v", newWeight)
 
-			neuron.weights[weightIndex] = newWeight
+			neuron.weights[weightIndex] = weight
 		}
 
 		// By applying the chain rule, we can define the partial differential of total error with respect to the bias to the hidden neuron as:
@@ -208,14 +203,11 @@ func (network *NeuralNetwork) updateHiddenLayerWeight() {
 		// ∂TotalError/∂HiddenNeuronBias = ∂TotalError/∂TotalNetInputToHiddenNeuron
 		pdErrorWrtBias := pdErrorWrtTotalNetInputOfHiddenNeuron
 
-		var newBias float64
 		// Now that we know how much the hidden neuron's bias affects the error in the output, we adjust the bias
 		// by subtracting the affect from the current bias after multiplying it with the learning rate.
 		// The learning rate is a constant value chosen for a network to control the correction in
 		// a network's bias based on a sample.
-		newBias -= learningRate * pdErrorWrtBias
-
-		neuron.bias = newBias
+		neuron.bias -= learningRate * pdErrorWrtBias
 	}
 }
 
