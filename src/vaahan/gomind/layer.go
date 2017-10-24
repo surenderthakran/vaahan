@@ -21,11 +21,11 @@ func newLayer(numberOfNeurons, numberOfNeuronsInPreviousLayer int) (*layer, erro
 			weights = append(weights, rand.Float64())
 		}
 		fmt.Println(fmt.Sprintf("weights: %v", weights))
-		neuron, err := newNeuron(weights)
+		bias := rand.Float64()
+		neuron, err := newNeuron(weights, bias)
 		if err != nil {
 			return nil, fmt.Errorf("error creating a neuron: %v", err)
 		}
-		neuron.bias = rand.Float64()
 		neurons = append(neurons, neuron)
 	}
 	return &layer{

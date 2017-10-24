@@ -26,12 +26,13 @@ func (n *neuron) String() string {
 }`, n.inputs, n.weights, n.bias, n.netInput, n.output)
 }
 
-func newNeuron(weights []float64) (*neuron, error) {
+func newNeuron(weights []float64, bias float64) (*neuron, error) {
 	if len(weights) == 0 {
 		return nil, fmt.Errorf("unable to create neuron without any weights")
 	}
 	return &neuron{
 		weights: weights,
+		bias:    bias,
 	}, nil
 }
 

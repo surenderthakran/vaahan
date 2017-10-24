@@ -306,12 +306,24 @@ func InitCar() (*Car, error) {
 
 	trainingSet := [][][]float64{
 		[][]float64{[]float64{0.1, 0.2}, []float64{0.3}},
+		[][]float64{[]float64{0.15, 0.25}, []float64{0.4}},
+		[][]float64{[]float64{0.12, 0.22}, []float64{0.34}},
+		[][]float64{[]float64{0.01, 0.02}, []float64{0.03}},
 		[][]float64{[]float64{0.2, 0.3}, []float64{0.5}},
 		[][]float64{[]float64{0.3, 0.4}, []float64{0.7}},
 		[][]float64{[]float64{0.4, 0.5}, []float64{0.9}},
 		[][]float64{[]float64{0.5, 0.1}, []float64{0.6}},
 		[][]float64{[]float64{0.6, 0.2}, []float64{0.8}},
 		[][]float64{[]float64{0.7, 0.2}, []float64{0.9}},
+	}
+
+	testSet := [][][]float64{
+		[][]float64{[]float64{0.1, 0.3}},
+		[][]float64{[]float64{0.2, 0.4}},
+		[][]float64{[]float64{0.3, 0.5}},
+		[][]float64{[]float64{0.4, 0.1}},
+		[][]float64{[]float64{0.5, 0.2}},
+		[][]float64{[]float64{0.05, 0.2}},
 	}
 
 	// trainingSet := [][][]float64{
@@ -368,7 +380,12 @@ func InitCar() (*Car, error) {
 	fmt.Println(fmt.Sprintf("\nTotal Error: %v", mind.CalculateTotalError(trainingSet)))
 	fmt.Println("========================================================")
 	mind.Describe()
-	fmt.Println(mind.CalculateOutput([]float64{0.15}))
+	fmt.Println("========================================================")
+	for _, test := range testSet {
+		fmt.Println(test)
+		fmt.Println(mind.CalculateOutput(test[0]))
+	}
+	fmt.Println("========================================================")
 
 	return car, nil
 }
