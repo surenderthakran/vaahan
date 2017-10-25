@@ -39,6 +39,13 @@ func NewNeuralNetwork(numberOfInputs, numberOfHiddenNeurons, numberOfOutputs int
 	}, nil
 }
 
+// CalculateOutput function returns the output array from the neural network for the given
+// input array based on the current weights.
+func (network *NeuralNetwork) CalculateOutput(input []float64) []float64 {
+	hiddenOutput := network.hiddenLayer.calculateOutput(input)
+	return network.outputLayer.calculateOutput(hiddenOutput)
+}
+
 // Train function trains the neural network using the given set of inputs and outputs.
 func (network *NeuralNetwork) Train(trainingInput, trainingOutput []float64) {
 	// fmt.Println("trainingInput: %v", trainingInput)
@@ -49,13 +56,6 @@ func (network *NeuralNetwork) Train(trainingInput, trainingOutput []float64) {
 	network.updateOutputLayerWeight(outputs, trainingOutput)
 	// fmt.Println("------------------------------------------------------------")
 	network.updateHiddenLayerWeight()
-}
-
-// CalculateOutput function returns the output array from the neural network for the given
-// input array based on the current weights.
-func (network *NeuralNetwork) CalculateOutput(input []float64) []float64 {
-	hiddenOutput := network.hiddenLayer.calculateOutput(input)
-	return network.outputLayer.calculateOutput(hiddenOutput)
 }
 
 // LastOutput function returns the array of last output computed by the network.
