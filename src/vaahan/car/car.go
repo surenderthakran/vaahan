@@ -3,11 +3,9 @@ package car
 import (
 	"fmt"
 	"math"
-	"math/rand"
 	"time"
 
 	geo "vaahan/gogeo/2d"
-	"vaahan/gomind"
 	"vaahan/track"
 
 	glog "github.com/golang/glog"
@@ -303,89 +301,6 @@ func InitCar() (*Car, error) {
 	if err := car.updateSensors(); err != nil {
 		return nil, fmt.Errorf("unable to start car: %v", err)
 	}
-
-	trainingSet := [][][]float64{
-		[][]float64{[]float64{0.1, 0.2}, []float64{0.3}},
-		[][]float64{[]float64{0.15, 0.25}, []float64{0.4}},
-		[][]float64{[]float64{0.12, 0.22}, []float64{0.34}},
-		[][]float64{[]float64{0.01, 0.02}, []float64{0.03}},
-		[][]float64{[]float64{0.2, 0.3}, []float64{0.5}},
-		[][]float64{[]float64{0.3, 0.4}, []float64{0.7}},
-		[][]float64{[]float64{0.4, 0.5}, []float64{0.9}},
-		[][]float64{[]float64{0.5, 0.1}, []float64{0.6}},
-		[][]float64{[]float64{0.6, 0.2}, []float64{0.8}},
-		[][]float64{[]float64{0.7, 0.2}, []float64{0.9}},
-	}
-
-	testSet := [][][]float64{
-		[][]float64{[]float64{0.1, 0.3}},
-		[][]float64{[]float64{0.2, 0.4}},
-		[][]float64{[]float64{0.3, 0.5}},
-		[][]float64{[]float64{0.4, 0.1}},
-		[][]float64{[]float64{0.5, 0.2}},
-		[][]float64{[]float64{0.05, 0.2}},
-	}
-
-	// trainingSet := [][][]float64{
-	// 	[][]float64{[]float64{0.1, 0.2, 0.3}, []float64{0.32}},
-	// 	[][]float64{[]float64{0.2, 0.3, 0.4}, []float64{0.46}},
-	// 	[][]float64{[]float64{0.3, 0.4, 0.5}, []float64{0.62}},
-	// 	[][]float64{[]float64{0.4, 0.5, 0.6}, []float64{0.8}},
-	// 	[][]float64{[]float64{0.5, 0.1, 0.2}, []float64{0.25}},
-	// 	[][]float64{[]float64{0.6, 0.2, 0.3}, []float64{0.42}},
-	// 	[][]float64{[]float64{0.7, 0.2, 0.3}, []float64{0.44}},
-	// 	[][]float64{[]float64{0.8, 0.3, 0.4}, []float64{0.64}},
-	// 	[][]float64{[]float64{0.9, 0.4, 0.5}, []float64{0.86}},
-	// 	[][]float64{[]float64{0.8, 0.5, 0.1}, []float64{0.5}},
-	// 	[][]float64{[]float64{0.7, 0.6, 0.2}, []float64{0.62}},
-	// 	[][]float64{[]float64{0.6, 0.2, 0.5}, []float64{0.62}},
-	// }
-
-	// trainingSet := [][][]float64{
-	// 	[][]float64{[]float64{0.05, 0.10}, []float64{0.01, 0.99}},
-	// }
-
-	// trainingSet := [][][]float64{
-	// 	[][]float64{[]float64{0.01}, []float64{0.02}},
-	// 	[][]float64{[]float64{0.02}, []float64{0.04}},
-	// 	[][]float64{[]float64{0.04}, []float64{0.08}},
-	// 	[][]float64{[]float64{0.05}, []float64{0.10}},
-	// 	[][]float64{[]float64{0.07}, []float64{0.14}},
-	// 	[][]float64{[]float64{0.08}, []float64{0.16}},
-	// 	[][]float64{[]float64{0.10}, []float64{0.20}},
-	// 	[][]float64{[]float64{0.11}, []float64{0.22}},
-	// 	[][]float64{[]float64{0.13}, []float64{0.26}},
-	// 	[][]float64{[]float64{0.14}, []float64{0.28}},
-	// 	[][]float64{[]float64{0.16}, []float64{0.32}},
-	// 	[][]float64{[]float64{0.17}, []float64{0.34}},
-	// }
-
-	mind, err := gomind.NewNeuralNetwork(len(trainingSet[0][0]), 3, len(trainingSet[0][1]))
-	if err != nil {
-		glog.Info(err)
-	}
-
-	mind.Describe()
-	fmt.Println("========================================================")
-	for i := 0; i < 100000; i++ {
-		fmt.Println(i)
-		index := rand.Intn(len(trainingSet))
-
-		fmt.Println(fmt.Sprintf("%v %v", trainingSet[index][0], trainingSet[index][1]))
-		mind.Train(trainingSet[index][0], trainingSet[index][1])
-
-		fmt.Println(mind.LastOutput())
-		fmt.Println(fmt.Sprintf("Error: %v\n", mind.CalculateError(trainingSet[index][1])))
-	}
-	fmt.Println(fmt.Sprintf("\nTotal Error: %v", mind.CalculateTotalError(trainingSet)))
-	fmt.Println("========================================================")
-	mind.Describe()
-	fmt.Println("========================================================")
-	for _, test := range testSet {
-		fmt.Println(test)
-		fmt.Println(mind.CalculateOutput(test[0]))
-	}
-	fmt.Println("========================================================")
 
 	return car, nil
 }
